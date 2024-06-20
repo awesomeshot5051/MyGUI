@@ -1,0 +1,66 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../.vscode"
+		},
+		{
+			"path": "../BreakoutSessions"
+		},
+		{
+			"path": "../Chapter2"
+		},
+		{
+			"path": "../Chapter3"
+		},
+		{
+			"path": "../Chapter4"
+		},
+		{
+			"path": "../Chapter5"
+		},
+		{
+			"path": "../Chapter6"
+		},
+		{
+			"path": "../Chapter7"
+		},
+		{
+			"path": "../code-edit-restrictions"
+		},
+		{
+			"path": "../Extra"
+		},
+		{
+			"path": "../Flow"
+		},
+		{
+			"path": "../lib"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../node_modules"
+		},
+		{
+			"path": "../ProgrammingProjects"
+		},
+		{
+			"path": "../Utils"
+		},
+		{
+			"path": "../Zybooks"
+		}
+	],
+	"settings": {
+		"java.debug.settings.hotCodeReplace": "manual",
+		"java.project.referencedLibraries": [
+			"lib/**/*.jar",
+			"MyGUI\\mysql-connector-java-8.0.25.jar"
+		],
+		"workbench.editor.showTabs": "multiple"
+	}
+}

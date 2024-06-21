@@ -78,5 +78,8 @@ You will have to setup a new MySQL Server in order to use the backend. Instructi
 
 
 # **_IMPORTANT_**
-Unfortunately, I havn't automated setting the path to the messages, log file or song library. As such, in order to use these, you have to go in the code and set the path manually. This is on my ToDo list of things to fix.
+Unfortunately, I havn't automated setting the path to the messages, log file or song library. However, there is a program that lets you set it manually. Here is what you have to do:
+- [ ] Run the file "**setFilePaths.java**"
+- [ ] Click on each of the buttons and navigate to the file specified. For example, when you click on the "Set Log File" button, you should locate the log.txt file that you are going to use. **Note:** The music folder is the folder that contains all of the music you would like to play. The files must be in a .wav format for audio and .mp4 for A/V. Select the folder that contains the music files.
+- [ ] Now when you run LoginGUI.java, it will locate the file_paths.txt file and set the Log file path, messages file path, password file path and song folder path automagically.
 

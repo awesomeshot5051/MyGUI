@@ -72,3 +72,11 @@ You will have to setup a new MySQL Server in order to use the backend. Instructi
 );**
 - [ ] Make sure you set the [mysql java connector](https://github.com/s412924/MyGUI/blob/5d4a6aa97f56904a6305dab0ea0e08e238a14954/mysql-connector-java-8.0.25.jar) as a dependancy for your IDE 
 - [ ] Now all you need to do is run the LoginGUI.java file. Set the file path of the passwords file and then answer the question. You're all setup.
+
+
+
+
+
+# **_IMPORTANT_**
+Unfortunately, I havn't automated setting the path to the messages, log file or song library. As such, in order to use these, you have to go in the code and set the path manually. This is on my ToDo list of things to fix.
+

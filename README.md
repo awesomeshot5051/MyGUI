@@ -1,4 +1,4 @@
-# What it is:
+  # What it is:
 A login Graphical User Interface using Java as the frontend and a locally run MySQL database server as the backend. 
 
 ![An example image of Standard User Options](https://github.com/s412924/ReadMe/blob/ae85feea212635d3b3c7feaf0694d12cb46b8914/StandardUserExample.png)
@@ -12,18 +12,22 @@ For admin users, you have all the same abilities as standard users, but you also
 For SuperAdmin users (the equivalent of Super User or sudo in Linux), you have all the same abilities as an admin account, but you also have the ability to change the password complexibility requirements (just the length for right now), change the expiration time for the passwords (the amount of days you can go before you are required to change your password), and restart the database server, though that is still in it's alpha stage, and hasn't been perfected yet.
 
 ![An example image of SuperAdmin Options](https://github.com/s412924/ReadMe/blob/1cb265f017b4121478041f89f341041a51d9ba90/SuperAdminExample.png)
+<details>
+  <summary>How To Use It</summary>
 
-# How To Use:
+  # How To Use:
 When you first get on, you have the option to choose whether you've logged in before. If you choose no, you will be given the default username and password. If it is your first time setting up the GUI, then the Default user will automatically be created. Once you login, you have to set up a new user. Input your Name, Username, Password, Expiration time, and group type. Again, if this is your first time setting up the GUI, then you will be given the option to create a new SuperAdmin. **WARNING! ONCE YOU SET A NEW SUPERADMIN YOU CANNOT CREATE ANOTHER ONE!**
 After that, it's a simple matter of logging out and then logging back in useing your new credentials.
 You will have to setup a new MySQL Server in order to use the backend. Instructions to do that are below
+</details>
 
 
-
-
+<details>
+  <summary>Setup</summary>
+  
 # How to setup MySQL server
-- [ ] https://dev.mysql.com/downloads/mysql/ Download and setup the MySQL server service.
-- [ ] Start the MySQL service. If you just setup the MySQL server service, then it should have already started, if not, you may have to go in and start it manually. Click the Windows Key then type in services. Go to the M's and find the MySQL. Right click on it and select Start.
+- [ ] 1. https://dev.mysql.com/downloads/mysql/ Download and setup the MySQL server service.
+- [ ] 2. Start the MySQL service. If you just setup the MySQL server service, then it should have already started, if not, you may have to go in and start it manually. Click the Windows Key then type in services. Go to the M's and find the MySQL. Right click on it and select Start.
 - [ ] Edit the password.txt file to contain the MySQL Server password that you set up for the root user.
 - [ ] Using the command MySQL 8.4 command line interface, login to the sql server. Then create the userDatabase and budget database. The commands are as follows:
   1. **create database userDatabase;**
@@ -72,14 +76,16 @@ You will have to setup a new MySQL Server in order to use the backend. Instructi
 );**
 - [ ] Make sure you set the [mysql java connector](https://github.com/s412924/MyGUI/blob/5d4a6aa97f56904a6305dab0ea0e08e238a14954/mysql-connector-java-8.0.25.jar) as a dependancy for your IDE 
 - [ ] Now all you need to do is run the LoginGUI.java file. Set the file path of the passwords file and then answer the question. You're all setup.
+</details>
 
 
 
-
-
+<details>
+  <summary>Important</summary>
+  
 # **_IMPORTANT_**
 Unfortunately, I havn't automated setting the path to the messages, log file or song library. However, there is a program that lets you set it manually. Here is what you have to do:
 - [ ] Run the file "**setFilePaths.java**"
 - [ ] Click on each of the buttons and navigate to the file specified. For example, when you click on the "Set Log File" button, you should locate the log.txt file that you are going to use. **Note:** The music folder is the folder that contains all of the music you would like to play. The files must be in a .wav format for audio and .mp4 for A/V. Select the folder that contains the music files.
 - [ ] Now when you run LoginGUI.java, it will locate the file_paths.txt file and set the Log file path, messages file path, password file path and song folder path automagically.
-
+</details>

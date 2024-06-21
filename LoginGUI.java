@@ -22,6 +22,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -38,42 +40,15 @@ import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -105,6 +80,7 @@ public class LoginGUI implements ActionListener {
             "hh:mm:ss a"
     );
     // private final AtomicBoolean isAdminAuthenticated = new AtomicBoolean(false);
+    private static String serverPassword;
     private JTextField usernameTextField;
     private JPasswordField passwordField;
     private JFrame frame;
@@ -159,12 +135,16 @@ public class LoginGUI implements ActionListener {
     private int attempts = 0;
     private JSpinner expirationTime;
     private boolean strong = false;
+    private static String passwordFilePath;
+    private static String logFilePath;
+    private static String messagesFilePath;
+    private static String musicFolderPath;
 
     public void connectToDatabase() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/userDatabase";
         String url2 = "jdbc:mysql://localhost:3306/Budget";
-        connection = DriverManager.getConnection(url, "root", "S@rdine855051!");
-        connection2 = DriverManager.getConnection(url2, "root", "S@rdine855051!");
+        connection = DriverManager.getConnection(url, "root", serverPassword);
+        connection2 = DriverManager.getConnection(url2, "root", serverPassword);
         // usernameTextField = new JTextField(20);
         // passwordField = new JPasswordField(20);
         // frame = new JFrame("Login");
@@ -809,7 +789,7 @@ public class LoginGUI implements ActionListener {
                             JOptionPane.DEFAULT_OPTION,
                             JOptionPane.ERROR_MESSAGE,
                             null,
-                            new Object[] { yesButton, noButton },
+                            new Object[]{yesButton, noButton},
                             yesButton
                     );
 
@@ -887,7 +867,7 @@ public class LoginGUI implements ActionListener {
                             JOptionPane.DEFAULT_OPTION,
                             JOptionPane.ERROR_MESSAGE,
                             null,
-                            new Object[] { okButton },
+                            new Object[]{okButton},
                             okButton
                     );
                 }
@@ -1015,7 +995,7 @@ public class LoginGUI implements ActionListener {
 
     private int getNotificationCount() {
         int count = 0;
-        try (BufferedReader reader = new BufferedReader(new FileReader(messages))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(messagesFilePath))) {
             while (reader.readLine() != null) {
                 count++;
             }
@@ -1331,8 +1311,8 @@ public class LoginGUI implements ActionListener {
                 displayMessages = new JButton("Display messages");
 
                 displayMessages.addActionListener(e -> {
-                    readFromFile(messages);
-                    clearFile(messages);
+                    readFromFile(messagesFilePath);
+                    clearFile(messagesFilePath);
                     displayMessages();
                 });
                 if (superAdmin) {
@@ -1731,7 +1711,7 @@ public class LoginGUI implements ActionListener {
                     }
                 }
 
-                Object[] options = { "Yes", "Dismiss", "Cancel" };
+                Object[] options = {"Yes", "Dismiss", "Cancel"};
 
                 int choice = JOptionPane.showOptionDialog(
                         frame,
@@ -1748,7 +1728,7 @@ public class LoginGUI implements ActionListener {
                     updateAccountStatusInDatabase(disabledUser, "enabled");
                     disabledUsers.remove(disabledUser);
                     messagesForAdminList.remove(message);
-                    writeToFile(messages);
+                    writeToFile(messagesFilePath);
                     frame.dispose();
                     notificationCount -= 1;
                     displayMessages();
@@ -1756,7 +1736,7 @@ public class LoginGUI implements ActionListener {
                     // Dismiss option selected
                     disabledUsers.remove(disabledUser);
                     messagesForAdminList.remove(message);
-                    writeToFile(messages);
+                    writeToFile(messagesFilePath);
                     frame.dispose();
                     notificationCount -= 1;
                     displayMessages();
@@ -1805,7 +1785,7 @@ public class LoginGUI implements ActionListener {
         // JOptionPane.INFORMATION_MESSAGE);
 
         notificationCount = 0;
-        writeToFile(messages);
+        writeToFile(messagesFilePath);
         // updatenotificationcount();
     }
 
@@ -2480,7 +2460,7 @@ public class LoginGUI implements ActionListener {
                 songQueue.clear();
             }
         }
-        Object[] options = { "View Music Video", "Play only audio" };
+        Object[] options = {"View Music Video", "Play only audio"};
         int choice = JOptionPane.showOptionDialog(
                 songFrame,
                 "Playing " + songTitle,
@@ -2495,7 +2475,7 @@ public class LoginGUI implements ActionListener {
             try {
                 // Specify the path to your song files
                 String filePath =
-                        "C:\\Users\\Traee.TRAES_GAMING_PC\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\Song Library\\" +
+                        musicFolderPath +
                                 songTitle.toLowerCase().replace(" ", "_") +
                                 ".wav";
                 File audioFile = new File(filePath);
@@ -2532,7 +2512,7 @@ public class LoginGUI implements ActionListener {
             try {
                 // Specify the path to your song files
                 String filePath =
-                        "C:\\Users\\Traee.TRAES_GAMING_PC\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\Song Library\\" +
+                        musicFolderPath +
                                 songTitle.toLowerCase().replace(" ", "_") +
                                 ".wav";
                 File audioFile = new File(filePath);
@@ -2584,7 +2564,7 @@ public class LoginGUI implements ActionListener {
         try {
             // Specify the path to your song files
             String filePath =
-                    "C:\\Users\\Traee.TRAES_GAMING_PC\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\Song Library\\" +
+                    musicFolderPath +
                             songTitle.toLowerCase().replace(" ", "_") +
                             ".wav";
             File audioFile = new File(filePath);
@@ -2680,7 +2660,7 @@ public class LoginGUI implements ActionListener {
                         Runtime
                                 .getRuntime()
                                 .exec(
-                                        new String[] {
+                                        new String[]{
                                                 "taskkill",
                                                 "/f",
                                                 "/im",
@@ -2723,7 +2703,7 @@ public class LoginGUI implements ActionListener {
 
     private void viewMusicVideo(String videoFileName) {
         String videoFilePath =
-                "C:\\Users\\Traee.TRAES_GAMING_PC\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\Song Library\\" +
+                musicFolderPath +
                         videoFileName.toLowerCase().replace(" ", "_") +
                         ".mp4";
         videoFile = new File(videoFilePath);
@@ -2899,17 +2879,17 @@ public class LoginGUI implements ActionListener {
                         category,
                         new ArrayList<>()
                 );
-                subcategoriesList.add(new Object[] { subcategory, "", amountSpent });
+                subcategoriesList.add(new Object[]{subcategory, "", amountSpent});
                 categorySubcategoriesMap.put(category, subcategoriesList);
             }
 
             // Create the table model with column names
 
             DefaultTableModel tableModel = new DefaultTableModel(
-                    new Object[] { "Current Balance", "", "$" + balance },
+                    new Object[]{"Current Balance", "", "$" + balance},
                     0
             );
-            Object[] headerRow = { "Category", "Max Allowed Money", "Amount Spent" };
+            Object[] headerRow = {"Category", "Max Allowed Money", "Amount Spent"};
 
             // Insert the current balance row at the beginning of the table model
             tableModel.insertRow(0, headerRow);
@@ -2919,7 +2899,7 @@ public class LoginGUI implements ActionListener {
                 String maxMoney = budgetResultSet.getString("MaxAllowedMoney");
                 String amountSpent = "$" + budgetResultSet.getString("AmountSpent");
                 tableModel.addRow(
-                        new Object[] { category, "$" + maxMoney, amountSpent }
+                        new Object[]{category, "$" + maxMoney, amountSpent}
                 );
 
                 // Add the subcategories for the current category to the table model
@@ -2942,7 +2922,7 @@ public class LoginGUI implements ActionListener {
 
             // Add total rows to the table model
             tableModel.addRow(
-                    new Object[] {
+                    new Object[]{
                             "Total",
                             "$" + totalMaxAllowedMoney,
                             "$" + totalAmountSpent,
@@ -3156,14 +3136,14 @@ public class LoginGUI implements ActionListener {
             ResultSet resultSet = statement.executeQuery(query);
 
             DefaultTableModel tableModel = new DefaultTableModel(
-                    new Object[] { "Amount", "Date" },
+                    new Object[]{"Amount", "Date"},
                     0
             );
             double totalIncome = 0.0;
             while (resultSet.next()) {
                 double amount = resultSet.getDouble("amount");
                 Date date = resultSet.getDate("date");
-                tableModel.addRow(new Object[] { amount, date });
+                tableModel.addRow(new Object[]{amount, date});
                 totalIncome += amount;
             }
 
@@ -4662,7 +4642,7 @@ public class LoginGUI implements ActionListener {
                 String username = resultSet.getString("username");
                 String group = resultSet.getString("group");
                 String status = resultSet.getString("status");
-                model.addRow(new Object[] { name, username, group, status });
+                model.addRow(new Object[]{name, username, group, status});
             }
 
             // Create a JTable using the model
@@ -4902,9 +4882,9 @@ public class LoginGUI implements ActionListener {
             JLabel usernameLabel = new JLabel(username);
             if (superAdmin) {
                 groupComboBox =
-                        new JComboBox<>(new String[] { "Standard", "Admin", "SuperAdmin" });
+                        new JComboBox<>(new String[]{"Standard", "Admin", "SuperAdmin"});
             } else {
-                groupComboBox = new JComboBox<>(new String[] { "Standard", "Admin" });
+                groupComboBox = new JComboBox<>(new String[]{"Standard", "Admin"});
             }
             groupComboBox.setSelectedItem(group);
 
@@ -5222,7 +5202,7 @@ public class LoginGUI implements ActionListener {
 
                 // Create a new JComboBox and store it in the array
                 statusComboBoxes[i] =
-                        new JComboBox<>(new String[] { "Enabled", "Disabled" });
+                        new JComboBox<>(new String[]{"Enabled", "Disabled"});
 
                 // Set the initial status based on the retrieved value
                 String currentStatus = statuses[i];
@@ -5238,7 +5218,7 @@ public class LoginGUI implements ActionListener {
                     continue;
                 }
                 JComboBox<String> statusComboBox = new JComboBox<>(
-                        new String[] { "Enabled", "Disabled" }
+                        new String[]{"Enabled", "Disabled"}
                 );
 
                 // Set the initial status based on the retrieved value
@@ -5539,7 +5519,27 @@ public class LoginGUI implements ActionListener {
         newUserPanel.add(usernameTextField);
         newUserPanel.add(new JLabel("Password:"));
         newUserPanel.add(passwordField);
-        String[] userOptions = { "Standard", "Admin" };
+        boolean superAdminExists = false;
+        try (PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM users WHERE `group` = 'SuperAdmin'");
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                superAdminExists = true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database errors appropriately
+        }
+
+// Set up the user options dropdown
+        String[] userOptions;
+        if (superAdminExists) {
+            userOptions = new String[]{"Standard", "Admin"};
+        } else {
+            userOptions = new String[]{"Standard", "Admin", "SuperAdmin"};
+        }
+//        JComboBox<String> userDropdown = new JComboBox<>(userOptions);
+
+//        String[] userOptions = {"Standard", "Admin"};
         JComboBox<String> userDropdown = new JComboBox<>(userOptions);
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(30, 1, 365, 1);
         expirationTime = new JSpinner(spinnerModel);
@@ -5686,72 +5686,73 @@ public class LoginGUI implements ActionListener {
                                 "Error",
                                 JOptionPane.ERROR_MESSAGE
                         );
-                    } else {
-                        try {
-                            int newUserId = generateUniqueId(); // Generate a unique id for the new user
-                            int expTime = (int) expirationTime.getValue();
+                    }
+                } else {
+                    try {
+                        int newUserId = generateUniqueId(); // Generate a unique id for the new user
+                        int expTime = (int) expirationTime.getValue();
 
-                            writeDatabase(
-                                    newUserId,
-                                    newUserString,
-                                    newUsernameString,
-                                    newPasswordHash,
-                                    selectedUserType,
-                                    "enabled",
-                                    null,
-                                    salt,
-                                    expTime
+                        writeDatabase(
+                                newUserId,
+                                newUserString,
+                                newUsernameString,
+                                newPasswordHash,
+                                selectedUserType,
+                                "enabled",
+                                null,
+                                salt,
+                                expTime
+                        );
+                        String formattedTime = getFormattedTime();
+                        if (isAlsoAdmin) {
+                            writeLog(
+                                    "New user: " +
+                                            newUserString +
+                                            " created successfully at " +
+                                            formattedTime +
+                                            " as a " +
+                                            selectedUserType +
+                                            " by " +
+                                            currentUser +
+                                            " as " +
+                                            user
                             );
-                            String formattedTime = getFormattedTime();
-                            if (isAlsoAdmin) {
-                                writeLog(
-                                        "New user: " +
-                                                newUserString +
-                                                " created successfully at " +
-                                                formattedTime +
-                                                " as a " +
-                                                selectedUserType +
-                                                " by " +
-                                                currentUser +
-                                                " as " +
-                                                user
-                                );
-                            } else {
-                                writeLog(
-                                        "New user: " +
-                                                newUserString +
-                                                " created successfully at " +
-                                                formattedTime +
-                                                " as a " +
-                                                selectedUserType +
-                                                " by " +
-                                                currentUser
-                                );
-                            }
-                            if (!user.equals("default")) {
-                                isDefaultCredentials = false;
-                            }
-                            JOptionPane.showMessageDialog(
-                                    frame,
-                                    "New user " + newUserString + " created!",
-                                    "Success",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
-                            newUserframe.dispose();
-                            openWelcomeWindow(isAdmin());
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
-                            JOptionPane.showMessageDialog(
-                                    frame,
-                                    "Failed to create a new user.",
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE
+                        } else {
+                            writeLog(
+                                    "New user: " +
+                                            newUserString +
+                                            " created successfully at " +
+                                            formattedTime +
+                                            " as a " +
+                                            selectedUserType +
+                                            " by " +
+                                            currentUser
                             );
                         }
+                        if (!user.equals("default")) {
+                            isDefaultCredentials = false;
+                        }
+                        JOptionPane.showMessageDialog(
+                                frame,
+                                "New user " + newUserString + " created!",
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+                        newUserframe.dispose();
+                        openWelcomeWindow(isAdmin());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                frame,
+                                "Failed to create a new user.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
                     }
                 }
             }
         };
+
 
         setButton.addActionListener(setButtonAction);
 
@@ -5895,9 +5896,15 @@ public class LoginGUI implements ActionListener {
                     @Override
                     public void keyPressed(KeyEvent e) {
                         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            String UsernameString = usernameTextField.getText();
+                            char[] newPasswordChars = passwordField.getPassword();
+                            // Hash the new password
+                            PasswordHash = hashPassword(newPasswordChars);
+                            // Clear the password char array for security reasons
+                            java.util.Arrays.fill(newPasswordChars, '\0');
                             UAframe.dispose();
                             try {
-                                setNewUser();
+                                testAdminCredentials(UsernameString, PasswordHash);
                             } catch (SQLException e1) {
                                 e1.printStackTrace();
                             }
@@ -5913,8 +5920,15 @@ public class LoginGUI implements ActionListener {
                     public void keyPressed(KeyEvent e) {
                         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                             UAframe.dispose();
+                            String UsernameString = usernameTextField.getText();
+                            char[] newPasswordChars = passwordField.getPassword();
+                            // Hash the new password
+                            PasswordHash = hashPassword(newPasswordChars);
+                            // Clear the password char array for security reasons
+                            java.util.Arrays.fill(newPasswordChars, '\0');
+                            UAframe.dispose();
                             try {
-                                setNewUser();
+                                testAdminCredentials(UsernameString, PasswordHash);
                             } catch (SQLException e1) {
                                 e1.printStackTrace();
                             }
@@ -5939,7 +5953,7 @@ public class LoginGUI implements ActionListener {
     private void testAdminCredentials(String username, String passwordHash)
             throws SQLException {
         String query =
-                "SELECT * FROM users WHERE username = ? AND password = ? AND `group` = 'admin' OR `group` = superadmin";
+                "SELECT * FROM users WHERE username = ? AND password = ? AND `group` = 'admin' OR `group` = 'SuperAdmin'";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, username);
             statement.setString(2, passwordHash);
@@ -6196,7 +6210,7 @@ public class LoginGUI implements ActionListener {
                 );
                 if (passwords.contains(newPassword)) {
                     if (superAdmin) {
-                        Object[] options = { "Ok", "Override" };
+                        Object[] options = {"Ok", "Override"};
                         int choice = JOptionPane.showOptionDialog(
                                 null,
                                 "You can't use an old password!\nPlease try again",
@@ -6354,7 +6368,7 @@ public class LoginGUI implements ActionListener {
             String newPasswordHash = hashPassword((newPassword + salt).toCharArray());
             if (passwords.contains(newPasswordHash)) {
                 if (superAdmin) {
-                    Object[] options = { "Ok", "Override" };
+                    Object[] options = {"Ok", "Override"};
                     int choice = JOptionPane.showOptionDialog(
                             null,
                             "You can't use an old password!\nPlease try again",
@@ -6614,7 +6628,7 @@ public class LoginGUI implements ActionListener {
         try (
                 PrintWriter out = new PrintWriter(
                         new FileWriter(
-                                "C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\log.txt",
+                                logFilePath,
                                 true
                         )
                 )
@@ -6654,7 +6668,7 @@ public class LoginGUI implements ActionListener {
 
     private static void showFirstRunPopup() throws InterruptedException {
         JFrame popupFrame = new JFrame();
-        Object[] options = { "Yes", "No", "Close" };
+        Object[] options = {"Yes", "No", "Close"};
 
         int choice = JOptionPane.showOptionDialog(
                 popupFrame,
@@ -6680,13 +6694,42 @@ public class LoginGUI implements ActionListener {
             );
             loginGUI = new LoginGUI();
             try (
-                    PreparedStatement statement = connection.prepareStatement(
+                    PreparedStatement checkUserExists = connection.prepareStatement(
+                            "SELECT COUNT(*) FROM users WHERE name=?"
+                    );
+                    PreparedStatement insertUser = connection.prepareStatement(
+                            "INSERT INTO users (id, name, username, password, `group`, status, last_login, salt, expiration_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    );
+                    PreparedStatement enableUser = connection.prepareStatement(
                             "UPDATE users SET status='Enabled' WHERE name=?"
                     )
             ) {
-                statement.setString(1, "default");
-                statement.executeUpdate();
-                // System.out.println("SQL statement executed successfully.");
+                // Check if the user exists
+                checkUserExists.setString(1, "default");
+                ResultSet resultSet = checkUserExists.executeQuery();
+                resultSet.next();
+                int userCount = resultSet.getInt(1);
+
+                if (userCount == 0) {
+                    // User does not exist, insert new user with the provided values
+                    insertUser.setInt(1, 489348); // id
+                    insertUser.setString(2, "default"); // name
+                    insertUser.setString(3, "admin"); // username
+                    insertUser.setString(4, "596f5147c59e036063f65ba59db85160e4d920c43ad2a6197ca451b1ebbb844c"); // password
+                    insertUser.setString(5, "Default"); // group
+                    insertUser.setString(6, "Enabled"); // status
+                    // Assuming last_login and expiration_time are of type TIMESTAMP and salt is VARCHAR
+                    insertUser.setDate(7, null); // last_login
+                    insertUser.setString(8, "8fc1191da3a3ed8a3b5972dcbb08801b"); // salt
+                    insertUser.setString(9, null); // expiration_time (null for now)
+                    insertUser.executeUpdate();
+                    System.out.println("User 'default' created and disabled.");
+                } else {
+                    // User exists, update status to 'Enabled'
+                    enableUser.setString(1, "default");
+                    enableUser.executeUpdate();
+                    System.out.println("User 'default' enabled successfully.");
+                }
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -6715,7 +6758,7 @@ public class LoginGUI implements ActionListener {
             if (option == JOptionPane.OK_OPTION) {
                 // User clicked OK, perform the desired action (clear logs in your case)
                 String filePath =
-                        "C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\log.txt";
+                        logFilePath;
 
                 try {
                     // Open the file in write mode
@@ -6779,7 +6822,35 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        showFirstRunPopup();
+    public static void main(String[] args) {
+        // Load file paths from "file_paths.txt"
+        try {
+            loadFilePaths();
+
+            // Read the password from the password file
+            serverPassword = new String(Files.readAllBytes(Paths.get(passwordFilePath)));
+            System.out.println("Password retrieved successfully.");
+             showFirstRunPopup(); // Call to your method (not provided here)
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    private static void loadFilePaths() throws IOException {
+        Properties properties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new FileReader("file_paths.txt"))) {
+            properties.load(reader);
+            passwordFilePath = properties.getProperty("Password");
+            logFilePath = properties.getProperty("Log");
+            messagesFilePath = properties.getProperty("Messages");
+            musicFolderPath = properties.getProperty("Music");
+        }
+        passwordFilePath=passwordFilePath.replace("file: ","");
+        musicFolderPath = musicFolderPath.replace("file: ","");
+        messagesFilePath = messagesFilePath.replace("folder: ","");
+        logFilePath = logFilePath.replace("file: ","");
+    }
+
 }

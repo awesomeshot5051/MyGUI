@@ -6848,8 +6848,8 @@ public class LoginGUI implements ActionListener {
             musicFolderPath = properties.getProperty("Music");
         }
         passwordFilePath=passwordFilePath.replace("file: ","");
-        musicFolderPath = musicFolderPath.replace("file: ","");
-        messagesFilePath = messagesFilePath.replace("folder: ","");
+        musicFolderPath = musicFolderPath.replace("folder: ","");
+        messagesFilePath = messagesFilePath.replace("file: ","");
         logFilePath = logFilePath.replace("file: ","");
     }
 

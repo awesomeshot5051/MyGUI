@@ -1123,6 +1123,7 @@ public class LoginGUI implements ActionListener {
         JButton changeRequirmentsButton = null;
         JButton changeExpirationTimeButton = null;
         JButton restartDatabaseButton = null;
+        JButton databaseInteractionButton = null;
         if (isDefaultCredentials) {
             String sql = "SELECT status FROM users WHERE name='default'";
 
@@ -1317,7 +1318,7 @@ public class LoginGUI implements ActionListener {
                 });
                 if (superAdmin) {
                     changeRequirmentsButton =
-                            new JButton("Change Password Complexibilty");
+                            new JButton("Change Password Complexity");
                     changeRequirmentsButton.addActionListener(e -> {
                         changePasswordRequirments();
                     });
@@ -1330,6 +1331,21 @@ public class LoginGUI implements ActionListener {
                         try {
                             restartDatabases();
                         } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    });
+                    databaseInteractionButton = new JButton("Interact with the Database");
+                    databaseInteractionButton.addActionListener(e->{
+                        try {
+                            DatabaseGUI.connectToDatabases(serverPassword);
+                            DatabaseGUI.chooseDatabase();
+
+                        } catch (IOException ex) {
+                            try {
+                                errorLog.writeErrorLog(ex);
+                            } catch (IOException exc) {
+                                throw new RuntimeException(exc);
+                            }
                             throw new RuntimeException(ex);
                         }
                     });
@@ -1448,6 +1464,9 @@ public class LoginGUI implements ActionListener {
             }
             if (restartDatabaseButton != null) {
                 welcomePanel.add(restartDatabaseButton);
+            }
+            if(databaseInteractionButton!=null){
+                welcomePanel.add(databaseInteractionButton);
             }
 
             welcomePanel.add(budgetButton);
@@ -2476,7 +2495,7 @@ public class LoginGUI implements ActionListener {
                 // Specify the path to your song files
                 String filePath =
                         musicFolderPath +
-                                songTitle.toLowerCase().replace(" ", "_") +
+                                "\\" + songTitle.toLowerCase().replace(" ", "_") +
                                 ".wav";
                 File audioFile = new File(filePath);
                 // Create an AudioInputStream from the file
@@ -2507,12 +2526,13 @@ public class LoginGUI implements ActionListener {
                         "Failed",
                         JOptionPane.ERROR_MESSAGE
                 );
+                e.printStackTrace();
             }
         } else if (choice == JOptionPane.NO_OPTION) {
             try {
                 // Specify the path to your song files
                 String filePath =
-                        musicFolderPath +
+                        musicFolderPath + "\\" +
                                 songTitle.toLowerCase().replace(" ", "_") +
                                 ".wav";
                 File audioFile = new File(filePath);
@@ -2564,7 +2584,7 @@ public class LoginGUI implements ActionListener {
         try {
             // Specify the path to your song files
             String filePath =
-                    musicFolderPath +
+                    musicFolderPath + "\\"+
                             songTitle.toLowerCase().replace(" ", "_") +
                             ".wav";
             File audioFile = new File(filePath);
@@ -2703,7 +2723,7 @@ public class LoginGUI implements ActionListener {
 
     private void viewMusicVideo(String videoFileName) {
         String videoFilePath =
-                musicFolderPath +
+                musicFolderPath + "\\"+
                         videoFileName.toLowerCase().replace(" ", "_") +
                         ".mp4";
         videoFile = new File(videoFilePath);

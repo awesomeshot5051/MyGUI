@@ -1,0 +1,105 @@
+import java.io.*;
+import java.util.InputMismatchException;
+import java.util.Properties;
+import java.util.Scanner;
+
+public class errorLog {
+    private static String errorLogFilePath;
+    private static void loadFilePaths() throws IOException {
+        Properties properties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new FileReader("file_paths.txt"))) {
+            properties.load(reader);
+            errorLogFilePath = properties.getProperty("Error");
+        }
+        errorLogFilePath = errorLogFilePath.replace("Log File: ","");
+    }
+    private static void writeErrorLog(String logEntry) {
+        try (
+                PrintWriter out = new PrintWriter(
+                        new FileWriter(
+                                errorLogFilePath,
+                                true
+                        )
+                )
+        ) {
+            out.println(logEntry);
+        } catch (IOException e) {
+            System.out.println("Error writing to log file: " + e.getMessage());
+        }
+    }
+public static void writeErrorLog(Throwable throwable) throws IOException {
+    try (PrintWriter pw = new PrintWriter(new FileWriter(errorLogFilePath, true))) {
+        throwable.printStackTrace(pw);
+    }
+}
+
+    public static void main(String[] args) throws IOException {
+
+        try {
+            loadFilePaths();
+            testErrors();
+        } catch (IOException | RuntimeException e) {
+//            writeErrorLog(new IOException());
+            writeErrorLog(e);
+            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void testErrors() throws IOException {
+        Scanner in = new Scanner(System.in);
+        while (true) { // Changed to an infinite loop
+            try {
+                System.out.println("Input something");
+                in.next();
+                System.out.println("What next?\n1: /\n2: +\n3: -\n4: *\n5: Exit");
+                String choice = in.next();
+                switch (choice) {
+                    case "1":
+                        // Intentionally causing a division by zero error
+                        int result = 1 / 0;
+                        break;
+                    case "2":
+                        // Intentionally causing an array index out of bounds exception
+                        int[] arr = new int[1];
+                        int number = arr[2];
+                        break;
+                    case "3":
+                        // Intentionally causing a null pointer exception
+                        String str = null;
+                        int length = str.length();
+                        break;
+                    case "4":
+                        // Intentionally causing an input mismatch exception
+                        System.out.println("Enter an integer:");
+                        int integer = in.nextInt(); // Causes an exception if the input is not an integer
+                        break;
+                    case "5":
+                        System.out.println("Exiting...");
+                        in.close();
+                        return; // Use return to exit the method cleanly
+                    case "6":
+//                        Scanner New = new Scanner(System.in);
+                        System.out.println("Input Something Please!");
+                        throw new IllegalStateException();
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                        break;
+                }
+            } catch (InputMismatchException ime) {
+                System.out.println("That's not an integer. Try again.");
+                writeErrorLog(ime);
+                in.nextLine(); // Consume the invalid input
+            }
+            catch(IllegalStateException e) {
+                writeErrorLog(e);
+//                in.nextLine();
+            }
+            catch (Exception e) {
+                writeErrorLog(e);
+                System.out.println("An error occurred: " + e.getMessage());
+            }
+        }
+    }
+}

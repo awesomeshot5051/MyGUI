@@ -89,3 +89,24 @@ Unfortunately, I havn't automated setting the path to the messages, log file or 
 - [ ] Click on each of the buttons and navigate to the file specified. For example, when you click on the "Set Log File" button, you should locate the log.txt file that you are going to use. **Note:** The music folder is the folder that contains all of the music you would like to play. The files must be in a .wav format for audio and .mp4 for A/V. Select the folder that contains the music files.
 - [ ] Now when you run LoginGUI.java, it will locate the file_paths.txt file and set the Log file path, messages file path, password file path and song folder path automagically.
 </details>
+
+# What's new:
+- [x] Added Error Log File
+- [x] Added Java Class errorLog with the ability to log error codes to the Error Log file
+- [x] Added ability to set Error Log File path in setFilePaths Java file
+- [x] Added new ability to SuperAdmin. You know have the ability to directly interact with the databases on the server useing SQL commands.
+- [x] Corrected glitch in Song Player. You were not able to play the Music Video Files, it resulted in an error that crashed the program.
+- [x] Corrected glitch on Startup. When you started the program it would attempt to write to the log file, but the log file was set incorrectly.
+
+# What I still have to add
+- [ ] Ability to set background colors
+- [ ] Ability to configure the Database Server in a cleaner way
+- [ ] Ability to set a queue stack in sonng player, as well as clean up how you interact with it.
+
+
+
+
+# Possible things I could add in the future
+
+- [ ] Embed the Video Game(s) I have programmed so you can interact with it within the GUI
+- [ ] I don't know yet. If you have any ideas please post them to this [link](https://github.com/awesomeshot5051/MyGUI/discussions/1)

@@ -94,6 +94,7 @@ Unfortunately, I havn't automated setting the path to the messages, log file or 
 - [x] Added Error Log File
 - [x] Added Java Class errorLog with the ability to log error codes to the Error Log file
 - [x] Added ability to set Error Log File path in setFilePaths Java file
+- [x] Corrected Automatic MySQL Service start. If you don't have the service already started, it will automatically do it for you. **Requires the IDE to be run as an Administrator** 
 - [x] Added new ability to SuperAdmin. You know have the ability to directly interact with the databases on the server useing SQL commands.
 - [x] Corrected glitch in Song Player. You were not able to play the Music Video Files, it resulted in an error that crashed the program.
 - [x] Corrected glitch on Startup. When you started the program it would attempt to write to the log file, but the log file was set incorrectly.

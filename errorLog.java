@@ -1,18 +1,23 @@
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.InputMismatchException;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 
 public class errorLog {
     private static String errorLogFilePath;
+
     private static void loadFilePaths() throws IOException {
         Properties properties = new Properties();
         try (BufferedReader reader = new BufferedReader(new FileReader("file_paths.txt"))) {
             properties.load(reader);
             errorLogFilePath = properties.getProperty("Error");
         }
-        errorLogFilePath = errorLogFilePath.replace("Log File: ","");
+        errorLogFilePath = errorLogFilePath.replace("Log File: ", "");
     }
+
     private static void writeErrorLog(String logEntry) {
         try (
                 PrintWriter out = new PrintWriter(
@@ -27,11 +32,35 @@ public class errorLog {
             System.out.println("Error writing to log file: " + e.getMessage());
         }
     }
-public static void writeErrorLog(Throwable throwable) throws IOException {
-    try (PrintWriter pw = new PrintWriter(new FileWriter(errorLogFilePath, true))) {
-        throwable.printStackTrace(pw);
+
+    public static void setErrorLogPath() {
+        try {
+            loadFilePaths();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-}
+
+    private static final String[] REMARKS = {
+            "Whoops my bad. \nIt seems I made a mistake in my code. \nOr something else happened. \nEh, either way, here's what happened",
+            "Oh no! Something went wrong. \nHere's the scoop on the error:",
+            "Yikes! An error occurred. \nLet's see what went wrong:",
+            "Oops! Looks like I tripped over a bug. \nHere's the error report:",
+            "Well, this is embarrassing. \nAn error happened. \nHere's the details:",
+            "You should have seen the other guy!\nHere's the play-by-play:"
+    };
+
+    public static int writeErrorLog(Throwable throwable) throws IOException {
+        Random random = new Random();
+        int remarkIndex = random.nextInt(REMARKS.length);
+        String selectedRemark = REMARKS[remarkIndex];
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter(errorLogFilePath, true))) {
+            pw.println(selectedRemark);
+            throwable.printStackTrace(pw);
+            return 0;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
 
@@ -91,15 +120,32 @@ public static void writeErrorLog(Throwable throwable) throws IOException {
                 System.out.println("That's not an integer. Try again.");
                 writeErrorLog(ime);
                 in.nextLine(); // Consume the invalid input
-            }
-            catch(IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 writeErrorLog(e);
 //                in.nextLine();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 writeErrorLog(e);
                 System.out.println("An error occurred: " + e.getMessage());
             }
+        }
+    }
+
+    public static void checkErrorLog(int option) {
+        if (option == 0) {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.open(new File(errorLogFilePath));
+                    System.exit(-1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Failed to open the file.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Desktop is not supported on this system.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            System.exit(-1);
         }
     }
 }

@@ -1,0 +1,5 @@
+Password file: C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\password.txt
+Log file: C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\log.txt
+Messages file: C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\messages.txt
+Music folder: C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\Song Library
+Error Log File: C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\ErrorLog.txt

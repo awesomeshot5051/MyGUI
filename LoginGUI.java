@@ -1,86 +1,60 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import javax.sound.sampled.*;
+import javax.swing.JSpinner;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.Year;
-import java.time.ZoneId;
+import java.sql.*;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+import java.util.Queue;
 import java.util.*;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.*;
-import javax.swing.JSpinner;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class LoginGUI implements ActionListener {
 
-    public class MyWindowAdapter extends WindowAdapter {
 
-        // Override the windowClosing method
-        @Override
-        public void windowClosing(WindowEvent e) {
-            // Call your disconnectFromDatabase method
-            JFrame frame = (JFrame) e.getSource();
-            frame.dispose();
-            try {
-                disconnectFromDatabase();
-            } catch (SQLException ex) {
-                // Handle any SQLExceptions
-                ex.printStackTrace();
-            }
-            // Dispose the frame
-        }
-    }
-
-    // Create an instance of your custom class
-    MyWindowAdapter myWindowAdapter = new MyWindowAdapter();
     // private final Semaphore semaphore = new Semaphore(0);
-    private static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
             "hh:mm:ss a"
     );
     // private final AtomicBoolean isAdminAuthenticated = new AtomicBoolean(false);
     private static String serverPassword;
+    private static boolean isAdmin;
+    // private String userNameHash;
+    private static Connection connection;
+    private static Connection connection2;
+    private static boolean addToMessage = false;
+    private static LoginGUI loginGUI;
+    private static String passwordFilePath;
+    private static String logFilePath;
+    private static String messagesFilePath;
+    private static String musicFolderPath;
+    private static ImageIcon icon;
+    private static boolean cleared = false;
+    private final int DEFAULT_PASSWORD_EXPIRATION_TIME = 30;
+    private final List<String> messagesForAdminList = new ArrayList<>();
+    private final List<String> disabledUsers = new ArrayList<>();
+    private final List<String> bannedUsers = new ArrayList<>();
+    private final String messages =
+            "C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\messages.txt";
+    private final Queue<String> songQueue;
+    protected Object ignore;
+    // Create an instance of your custom class
+    MyWindowAdapter myWindowAdapter = new MyWindowAdapter();
+    String currentStatus = "";
+    double balance = 0.0;
     private JTextField usernameTextField;
     private JPasswordField passwordField;
     private JFrame frame;
@@ -92,20 +66,14 @@ public class LoginGUI implements ActionListener {
     private String user;
     private String currentUser;
     private String group;
-    private static boolean isAdmin;
-    String currentStatus = "";
     // private JTextField newUser;
     private String PasswordHash;
     private String capturedPassword;
-    // private String userNameHash;
-    private static Connection connection;
-    private static Connection connection2;
     private String status;
     private JComboBox<String>[] statusComboBoxes;
     // private JButton updatebutton
     private int i = 0;
     private boolean isUpdateSuccessful = false;
-
     private boolean isAlsoAdmin = false;
     private boolean clearingLogs = false;
     private boolean setToDelete = false;
@@ -115,30 +83,382 @@ public class LoginGUI implements ActionListener {
     private JPanel songJPanel;
     private boolean adminIsHacked = false;
     private JButton hackAdminButton = null;
-    private List<String> messagesForAdminList = new ArrayList<>();
-    private static boolean addToMessage = false;
     private int notificationCount;
     private JButton displayMessages;
-    private List<String> disabledUsers = new ArrayList<>();
-    private List<String> bannedUsers = new ArrayList<>();
-    private String messages =
-            "C:\\Users\\Traee\\OneDrive - University of North Florida\\Programming\\College Programming\\Programming 2\\Codes\\MyGUI\\messages.txt";
     private JPanel loginPanel;
     private boolean clearingOnLogin;
-    private Queue<String> songQueue;
     private boolean passwordChange;
-    private static LoginGUI loginGUI;
     private boolean superAdmin = false;
     private int passwordExpirationTime;
-    private final int DEFAULT_PASSWORD_EXPIRATION_TIME = 30;
     private Process process;
     private int attempts = 0;
     private JSpinner expirationTime;
     private boolean strong = false;
-    private static String passwordFilePath;
-    private static String logFilePath;
-    private static String messagesFilePath;
-    private static String musicFolderPath;
+    private List<Character> crackedPasswd;
+    private List<Character> characters;
+    private JTextArea outputTextArea;
+    private JPasswordField PasswordField;
+    private JButton crackbutton;
+    private String currentSong;
+    private File videoFile;
+
+    public LoginGUI() throws InterruptedException {
+        songQueue = new LinkedList<>();
+        // Set a maximum number of attempts
+        // Set a delay between each attempt in milliseconds
+        // Initialize a variable to store the connection status
+        // Use a loop to try to connect to the database until successful or maximum
+        // attempts reached
+        try {
+            // Try to connect to the database
+            connectToDatabase();
+            // If no exception is thrown, set the connection status to true
+            // Initialize the GUI
+            initializeGUI();
+        } catch (SQLException e) {
+            try {
+                errorLog.writeErrorLog(e);
+                // If an exception is thrown, increment the number of attempts
+                JOptionPane.showMessageDialog(
+                        null,
+                        "An error occured: Unable to reach the database\nPlease wait while the software \nattempts to restart the database",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                new windowsTerminalOpener(true, false);
+                process = windowsTerminalOpener.getProcess();
+//             Wait for some time before trying again
+//                Thread.sleep(3000);
+                connectToDatabase();
+
+            } catch (InterruptedException | SQLException | IOException e2) {
+                // If an exception is thrown, print the stack trace to the console
+                JOptionPane.showMessageDialog(
+                        null,
+                        "An error occurred: Unable to reach the database\nPlease check to see if the MySQL service is running\nor that you're running the IDE as an administrator.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                int option = JOptionPane.showOptionDialog(null, "Would you like to open the Error Log?", "Check ErrorLog?", JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null, null, null);
+                errorLog.checkErrorLog(option);
+            }
+        }
+        // If the connection status is still false after the loop, show a popup message
+        // that all attempts have failed
+
+    }
+
+    public static boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean isAdmin) {
+        LoginGUI.isAdmin = isAdmin;
+    }
+
+    private static String getFormattedTime() {
+        LocalTime currentTime = LocalTime.now();
+        return currentTime.format(timeFormatter);
+    }
+
+    public static String isEnabled(String username, String password) {
+        String localStatus = "Disabled"; // Default status
+        String query =
+                "SELECT status FROM users WHERE username = ? AND password = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            statement.setString(2, password);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    localStatus = resultSet.getString("status");
+                } else {
+                    localStatus = "";
+                }
+            }
+        } catch (SQLException e) {
+            // Handle any SQL exceptions here
+            JOptionPane.showMessageDialog(
+                    null,
+                    "An error occured\nError code " + e.getStackTrace(),
+                    "Failed",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+        return localStatus;
+    }
+
+    private static void calculateInvestment(
+            JTextField principalField,
+            JTextField rateField,
+            JTextField yearsField,
+            JLabel resultLabel
+    ) {
+        double principal = Double.parseDouble(principalField.getText());
+        double rate = Double.parseDouble(rateField.getText());
+        int years = Integer.parseInt(yearsField.getText());
+
+        double result = principal * Math.pow(1 + rate / 100, years);
+        if (result >= 1000000000) {
+            resultLabel.setText("Future Value: A really big number");
+        } else {
+            resultLabel.setText("Future Value: " + String.format("%.2f", result));
+        }
+    }
+
+    public static int convertMonthNameToNumber(String monthName) {
+        Month month = Month.valueOf(monthName.toUpperCase());
+        return month.getValue();
+    }
+
+    private static void createTables(
+            String budget_table,
+            String subcategories_Table
+    ) throws SQLException {
+        String createBudgetTableQuery =
+                "CREATE TABLE IF NOT EXISTS " +
+                        budget_table +
+                        " (" +
+                        "Category VARCHAR(50) NOT NULL, " +
+                        "MaxAllowedMoney DOUBLE, " +
+                        "AmountSpent DOUBLE, " +
+                        "user VARCHAR(50) NOT NULL, " +
+                        "PRIMARY KEY (Category, user)" +
+                        ")";
+
+        String createSubcategoriesTableQuery =
+                "CREATE TABLE IF NOT EXISTS " +
+                        subcategories_Table +
+                        " (" +
+                        "category_name VARCHAR(50) NOT NULL, " +
+                        "subcategory_name VARCHAR(50) NOT NULL DEFAULT '', " +
+                        "AmountSpent DOUBLE, " +
+                        "user VARCHAR(50) NOT NULL, " +
+                        "PRIMARY KEY (category_name, subcategory_name, user)" +
+                        ")";
+
+        try (
+                PreparedStatement budgetStatement = connection2.prepareStatement(
+                        createBudgetTableQuery
+                );
+                PreparedStatement subcategoriesStatement = connection2.prepareStatement(
+                        createSubcategoriesTableQuery
+                )
+        ) {
+            budgetStatement.executeUpdate();
+            subcategoriesStatement.executeUpdate();
+        }
+    }
+
+    private static boolean checkTableExists(String tableName)
+            throws SQLException {
+        DatabaseMetaData metadata = connection2.getMetaData();
+        try (
+                ResultSet resultSet = metadata.getTables(null, null, tableName, null)
+        ) {
+            return resultSet.next();
+        }
+    }
+
+    private static int generateUniqueId() {
+        Random random = new Random();
+        int min = 10000000; // Minimum value for the random number
+        int max = 99999999; // Maximum value for the random number
+        int uniqueId = random.nextInt(max - min + 1) + min;
+        return uniqueId;
+    }
+
+    public static String generateRandomSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] saltBytes = new byte[16]; // 16 bytes = 128 bits
+        random.nextBytes(saltBytes);
+        StringBuilder sb = new StringBuilder();
+        for (byte b : saltBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        System.out.println(sb);
+        return sb.toString();
+    }
+
+    // public static String hashPassword(char[] password, String salt) {
+    public static String hashPassword(char[] password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedPassword = md.digest(
+                    new String(password).getBytes(StandardCharsets.UTF_8)
+            );
+            // Convert the hashed password to a hexadecimal string
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedPassword) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeLog(String logEntry) {
+        try (
+                PrintWriter out = new PrintWriter(
+                        new FileWriter(
+                                logFilePath,
+                                true
+                        )
+                )
+        ) {
+            out.println(logEntry);
+        } catch (IOException e) {
+            System.out.println("Error writing to log file: " + e.getMessage());
+        }
+    }
+
+    private static void writeDatabase(
+            int id,
+            String user,
+            String username,
+            String password,
+            String userGroup,
+            String Status,
+            Object lastLogin,
+            String salt,
+            int expTime
+    ) throws SQLException {
+        String query =
+                "INSERT INTO users (id, name, username, password, `group`, status, last_login, salt, expiration_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            statement.setString(2, user);
+            statement.setString(3, username);
+            statement.setString(4, password);
+            statement.setString(5, userGroup);
+            statement.setString(6, Status);
+            statement.setString(7, (String) lastLogin);
+            statement.setString(8, salt);
+            statement.setInt(9, expTime);
+            statement.executeUpdate();
+        }
+    }
+
+    private static void showFirstRunPopup() throws InterruptedException {
+        JFrame popupFrame = new JFrame();
+        popupFrame.setIconImage(icon.getImage());
+        Object[] options = {"Yes", "No", "Close"};
+
+        int choice = JOptionPane.showOptionDialog(
+                popupFrame,
+                "Have you logged in before?",
+                "First Run",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            // Process the username and password as needed
+            loginGUI = new LoginGUI();
+        } else if (choice == JOptionPane.NO_OPTION) {
+            // Display default username and password
+            JOptionPane.showMessageDialog(
+                    popupFrame,
+                    "Default username: admin\nDefault password: admin",
+                    "Default Credentials",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            loginGUI = new LoginGUI();
+            try (
+                    PreparedStatement checkUserExists = connection.prepareStatement(
+                            "SELECT COUNT(*) FROM users WHERE name=?"
+                    );
+                    PreparedStatement insertUser = connection.prepareStatement(
+                            "INSERT INTO users (id, name, username, password, `group`, status, last_login, salt, expiration_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    );
+                    PreparedStatement enableUser = connection.prepareStatement(
+                            "UPDATE users SET status='Enabled' WHERE name=?"
+                    )
+            ) {
+                // Check if the user exists
+                checkUserExists.setString(1, "default");
+                ResultSet resultSet = checkUserExists.executeQuery();
+                resultSet.next();
+                int userCount = resultSet.getInt(1);
+
+                if (userCount == 0) {
+                    // User does not exist, insert new user with the provided values
+                    insertUser.setInt(1, 489348); // id
+                    insertUser.setString(2, "default"); // name
+                    insertUser.setString(3, "admin"); // username
+                    insertUser.setString(4, "596f5147c59e036063f65ba59db85160e4d920c43ad2a6197ca451b1ebbb844c"); // password
+                    insertUser.setString(5, "Default"); // group
+                    insertUser.setString(6, "Enabled"); // status
+                    // Assuming last_login and expiration_time are of type TIMESTAMP and salt is VARCHAR
+                    insertUser.setDate(7, null); // last_login
+                    insertUser.setString(8, "8fc1191da3a3ed8a3b5972dcbb08801b"); // salt
+                    insertUser.setString(9, null); // expiration_time (null for now)
+                    insertUser.executeUpdate();
+                    System.out.println("User 'default' created and disabled.");
+                } else {
+                    // User exists, update status to 'Enabled'
+                    enableUser.setString(1, "default");
+                    enableUser.executeUpdate();
+                    System.out.println("User 'default' enabled successfully.");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            // Close the program
+            System.exit(0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Load file paths from "file_paths.txt"
+        try {
+            loadFilePaths();
+            icon = IconFinder.findIcon();
+            // Read the password from the password file
+            serverPassword = new String(Files.readAllBytes(Paths.get(passwordFilePath)));
+            System.out.println("Password retrieved successfully.");
+            errorLog.setErrorLogPath();
+            showFirstRunPopup(); // Call to your method (not provided here)
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void loadFilePaths() throws IOException {
+        Properties properties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new FileReader("file_paths.txt"))) {
+            properties.load(reader);
+            passwordFilePath = properties.getProperty("Password");
+            logFilePath = properties.getProperty("Log");
+            messagesFilePath = properties.getProperty("Messages");
+            musicFolderPath = properties.getProperty("Music");
+        }
+        passwordFilePath = passwordFilePath.replace("file: ", "");
+        musicFolderPath = musicFolderPath.replace("folder: ", "");
+        messagesFilePath = messagesFilePath.replace("file: ", "");
+        logFilePath = logFilePath.replace("file: ", "");
+    }
+
+    // Method to update the notification count and button text
+    // private void //updatenotificationcount() {
+    // if (notificationCount > 0) {
+    // displayMessages.setText("Display messages (" + notificationCount + ")");
+    // } else {
+    // displayMessages.setText("Display messages");
+    // }
+    // }
 
     public void connectToDatabase() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/userDatabase";
@@ -232,14 +552,6 @@ public class LoginGUI implements ActionListener {
         // frame.setVisible(true);
     }
 
-    public static boolean isAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(boolean isAdmin) {
-        LoginGUI.isAdmin = isAdmin;
-    }
-
     public void disconnectFromDatabase() throws SQLException {
         // Use try-with-resources to close the connections
         try (
@@ -261,42 +573,6 @@ public class LoginGUI implements ActionListener {
             connection.close();
             connection2.close();
         }
-    }
-
-    public LoginGUI() throws InterruptedException {
-        songQueue = new LinkedList<>();
-        // Set a maximum number of attempts
-        // Set a delay between each attempt in milliseconds
-        // Initialize a variable to store the connection status
-        // Use a loop to try to connect to the database until successful or maximum
-        // attempts reached
-        try {
-            // Try to connect to the database
-            connectToDatabase();
-            // If no exception is thrown, set the connection status to true
-            // Initialize the GUI
-            initializeGUI();
-        } catch (SQLException e) {
-            // If an exception is thrown, increment the number of attempts
-            JOptionPane.showMessageDialog(
-                    null,
-                    "An error occured.\nError message: " + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            new windowsTerminalOpener(true, false);
-            process = windowsTerminalOpener.getProcess();
-            // Wait for some time before trying again
-            // try {
-            // Thread.sleep(1000);
-            // } catch (InterruptedException e2) {
-            // // If an exception is thrown, print the stack trace to the console
-            // e2.printStackTrace();
-            // }
-        }
-        // If the connection status is still false after the loop, show a popup message
-        // that all attempts have failed
-
     }
 
     private void getExpirationTime() {
@@ -334,13 +610,15 @@ public class LoginGUI implements ActionListener {
         usernameTextField = new JTextField(20);
         passwordField = new JPasswordField(20);
         frame = new JFrame("Login");
+        frame.setIconImage(icon.getImage());
         welcomeFrame = new JFrame("Welcome");
+        welcomeFrame.setIconImage(icon.getImage());
 
-        frame.setSize(400, 300);
+        frame.setSize(465, 300);
         // Set up the login form
         loginPanel = new JPanel();
         loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.PAGE_AXIS));
-        Dimension panelSize = new Dimension(200, 100);
+        Dimension panelSize = new Dimension(220, 100);
         loginPanel.setPreferredSize(panelSize);
         // Add the login button
         JButton loginButton = new JButton("Login");
@@ -903,7 +1181,7 @@ public class LoginGUI implements ActionListener {
                         currentDate
                 );
                 System.out.println(
-                        lastChangedLocalDate.toString() + " " + currentDate.toString()
+                        lastChangedLocalDate + " " + currentDate
                 );
                 passwordNotExpired = differenceInDays < passwordExpirationTime;
                 if (superAdmin) {
@@ -1010,11 +1288,6 @@ public class LoginGUI implements ActionListener {
         return count;
     }
 
-    private static String getFormattedTime() {
-        LocalTime currentTime = LocalTime.now();
-        return currentTime.format(timeFormatter);
-    }
-
     private void getUserValue(String username, String password)
             throws SQLException {
         // String user = null;
@@ -1057,11 +1330,7 @@ public class LoginGUI implements ActionListener {
                         group.equalsIgnoreCase("admin") ||
                                 group.equalsIgnoreCase("superadmin")
                 );
-                if (group.equalsIgnoreCase("superadmin")) {
-                    superAdmin = true;
-                } else {
-                    superAdmin = false;
-                }
+                superAdmin = group.equalsIgnoreCase("superadmin");
                 if (!isAdmin()) {
                     isDefaultCredentials = group.equalsIgnoreCase("default");
                     setAdmin(false);
@@ -1084,36 +1353,8 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    public static String isEnabled(String username, String password) {
-        String localStatus = "Disabled"; // Default status
-        String query =
-                "SELECT status FROM users WHERE username = ? AND password = ?";
-
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, username);
-            statement.setString(2, password);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    localStatus = resultSet.getString("status");
-                } else {
-                    localStatus = "";
-                }
-            }
-        } catch (SQLException e) {
-            // Handle any SQL exceptions here
-            JOptionPane.showMessageDialog(
-                    null,
-                    "An error occured\nError code " + e.getStackTrace(),
-                    "Failed",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-
-        return localStatus;
-    }
-
     public void openWelcomeWindow(boolean admin) {
+        welcomeFrame.setIconImage(icon.getImage());
         JButton setNewUserButton = null;
         JButton updateAccountStatusButton = null;
         JButton switchUserButton = null;
@@ -1124,6 +1365,7 @@ public class LoginGUI implements ActionListener {
         JButton changeExpirationTimeButton = null;
         JButton restartDatabaseButton = null;
         JButton databaseInteractionButton = null;
+        JButton databaseShutdownButton = null;
         if (isDefaultCredentials) {
             String sql = "SELECT status FROM users WHERE name='default'";
 
@@ -1139,6 +1381,7 @@ public class LoginGUI implements ActionListener {
 
                 if (!isDisabled) {
                     JFrame frame = new JFrame();
+                    frame.setIconImage(icon.getImage());
                     JOptionPane.showMessageDialog(
                             frame,
                             "You MUST set up a new user!",
@@ -1170,17 +1413,18 @@ public class LoginGUI implements ActionListener {
                 try {
                     setNewUser();
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
+
                     e1.printStackTrace();
                 }
             });
             welcomeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            JLabel welcomeLabel = new JLabel("Welcome, " + user + "!");
-            JPanel welcomePanel = new JPanel();
-            welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.PAGE_AXIS));
-            Dimension panelSize = new Dimension(200, 240);
-            welcomePanel.setPreferredSize(panelSize);
+            JLabel welcomeLabel = new JLabel("Welcome, " + user + "!", SwingConstants.CENTER);
+            JPanel welcomePanel = new JPanel(new BorderLayout());
+            welcomePanel.add(welcomeLabel, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 10, 10)); // GridLayout with 2 rows and 1 column
+
             JButton exitButton = new JButton("Exit");
             exitButton.addActionListener(e -> {
                 welcomeFrame.dispose();
@@ -1189,19 +1433,22 @@ public class LoginGUI implements ActionListener {
                 initializeGUI();
             });
 
-            welcomePanel.add(welcomeLabel);
             if (setNewUserButton != null) {
-                welcomePanel.add(setNewUserButton);
+                buttonPanel.add(setNewUserButton);
             }
-            welcomePanel.add(exitButton);
+            buttonPanel.add(exitButton);
 
-            welcomeFrame.setContentPane(welcomePanel);
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.add(welcomePanel, BorderLayout.NORTH);
+            mainPanel.add(buttonPanel, BorderLayout.CENTER);
+            welcomeFrame.setPreferredSize(new Dimension(450, 300)); // Adjust the dimensions as needed
+            welcomeFrame.setContentPane(mainPanel);
             welcomeFrame.addWindowListener(myWindowAdapter);
             welcomeFrame.pack();
             welcomeFrame.setLocationRelativeTo(null);
             welcomeFrame.setVisible(true);
 
-            // Close the login window
+// Close the login window
             frame.dispose();
         } else {
             if (passwordChange) {
@@ -1210,7 +1457,7 @@ public class LoginGUI implements ActionListener {
                         changePasswordRequired();
                         openWelcomeWindow(isAdmin);
                     } catch (SQLException e) {
-                        // TODO Auto-generated catch block
+
                         JOptionPane.showMessageDialog(
                                 null,
                                 "An Error has occured: \nError message: " + e.getMessage(),
@@ -1225,14 +1472,18 @@ public class LoginGUI implements ActionListener {
             // int minute = currentTime.getMinute();
             // int second = currentTime.getSecond();
             welcomeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            // welcomeFrame.setSize(400, 300);
 
-            JLabel welcomeLabel = new JLabel("Welcome, " + user + "!");
-            JPanel welcomePanel = new JPanel();
-            welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.PAGE_AXIS));
-            JScrollPane scrollPane = new JScrollPane(welcomePanel);
-            Dimension panelSize = new Dimension(229, 405);
-            scrollPane.setPreferredSize(panelSize);
+            JPanel welcomeLabelPanel = new JPanel(new BorderLayout());
+            JLabel welcomeLabel = new JLabel("Welcome, " + user + "!", SwingConstants.CENTER);
+            welcomeLabelPanel.add(welcomeLabel, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // GridLayout for buttons
+            buttonPanel.setPreferredSize(new Dimension(440, 480));
+
+            // Create a scroll pane for the content panel
+            JScrollPane scrollPane = new JScrollPane(buttonPanel);
+            scrollPane.setPreferredSize(new Dimension(440, 450));
+
 
             JButton changePasswordButton = new JButton("Change Password");
             changePasswordButton.addActionListener(e -> {
@@ -1248,7 +1499,11 @@ public class LoginGUI implements ActionListener {
                 welcomeFrame.dispose();
                 changeUsername();
             });
+            JButton viewFilesButton = new JButton("View Files");
+            viewFilesButton.addActionListener(_ -> {
+                fileViewer.openAndViewFiles(this.frame);
 
+            });
             JButton updateUserGroupButton = null;
             if (adminIsHacked) {
                 setNewUserButton = new JButton("Set New User");
@@ -1260,7 +1515,6 @@ public class LoginGUI implements ActionListener {
             if (admin) {
                 setNewUserButton = new JButton("Set New User");
                 setNewUserButton.addActionListener(e -> {
-                    // welcomeFrame.dispose();
                     promptAdminCredentials();
                 });
                 updateUserGroupButton = new JButton("Update User Group");
@@ -1335,11 +1589,12 @@ public class LoginGUI implements ActionListener {
                         }
                     });
                     databaseInteractionButton = new JButton("Interact with the Database");
-                    databaseInteractionButton.addActionListener(e->{
+                    databaseInteractionButton.addActionListener(e -> {
                         try {
                             DatabaseGUI.connectToDatabases(serverPassword);
                             DatabaseGUI.chooseDatabase();
-
+                            DatabaseGUI.setWelcomeWindow(welcomeFrame);
+                            welcomeFrame.setVisible(false);
                         } catch (IOException ex) {
                             try {
                                 errorLog.writeErrorLog(ex);
@@ -1349,6 +1604,12 @@ public class LoginGUI implements ActionListener {
                             throw new RuntimeException(ex);
                         }
                     });
+                    databaseShutdownButton = new JButton("Shutdown Database");
+                    databaseShutdownButton.addActionListener(_ -> {
+                        windowsTerminalOpener.setWelcomeWindow(welcomeFrame);
+                        welcomeFrame.setVisible(false);
+                        windowsTerminalOpener.startOrStop();
+                    });
                 }
             }
             JButton budgetButton = new JButton("Budget");
@@ -1357,7 +1618,6 @@ public class LoginGUI implements ActionListener {
                 try {
                     budget();
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
             });
@@ -1401,7 +1661,6 @@ public class LoginGUI implements ActionListener {
                     try {
                         setAdmin(isUserAdmin());
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                     welcomeFrame.dispose();
@@ -1429,58 +1688,67 @@ public class LoginGUI implements ActionListener {
                     initializeGUI();
                 });
             }
-            welcomePanel.add(welcomeLabel);
-            welcomePanel.add(changeUsernameButton);
-            welcomePanel.add(changePasswordButton);
+            buttonPanel.add(welcomeLabelPanel); // Ensure the welcome label spans across two columns
+
+//            buttonPanel.add(new JLabel()); // Add empty label for alignment
+            buttonPanel.add(changeUsernameButton);
+            buttonPanel.add(changePasswordButton);
             if (setNewUserButton != null) {
-                welcomePanel.add(setNewUserButton);
+                buttonPanel.add(setNewUserButton);
             }
             if (updateUserGroupButton != null) {
-                welcomePanel.add(updateUserGroupButton);
+                buttonPanel.add(updateUserGroupButton);
             }
             if (updateAccountStatusButton != null) {
-                welcomePanel.add(updateAccountStatusButton);
+                buttonPanel.add(updateAccountStatusButton);
             }
             if (switchUserButton != null) {
-                welcomePanel.add(switchUserButton);
+                buttonPanel.add(switchUserButton);
             }
             if (deleteUsersButton != null) {
-                welcomePanel.add(deleteUsersButton);
+                buttonPanel.add(deleteUsersButton);
             }
             if (displayAllUsersButton != null) {
-                welcomePanel.add(displayAllUsersButton);
+                buttonPanel.add(displayAllUsersButton);
             }
             if (displayLogFilesButton != null) {
-                welcomePanel.add(displayLogFilesButton);
+                buttonPanel.add(displayLogFilesButton);
             }
             if (displayMessages != null) {
-                welcomePanel.add(displayMessages);
+                buttonPanel.add(displayMessages);
             }
             if (changeRequirmentsButton != null) {
-                welcomePanel.add(changeRequirmentsButton);
+                buttonPanel.add(changeRequirmentsButton);
             }
             if (changeExpirationTimeButton != null) {
-                welcomePanel.add(changeExpirationTimeButton);
+                buttonPanel.add(changeExpirationTimeButton);
             }
             if (restartDatabaseButton != null) {
-                welcomePanel.add(restartDatabaseButton);
+                buttonPanel.add(restartDatabaseButton);
             }
-            if(databaseInteractionButton!=null){
-                welcomePanel.add(databaseInteractionButton);
+            if (databaseInteractionButton != null) {
+                buttonPanel.add(databaseInteractionButton);
+            }
+            if (databaseShutdownButton != null) {
+                buttonPanel.add(databaseShutdownButton);
             }
 
-            welcomePanel.add(budgetButton);
-            welcomePanel.add(songLibraryButton);
-            welcomePanel.add(investmentButton);
-            welcomePanel.add(codeCrackerButton);
-            welcomePanel.add(numberGameButton);
-            welcomePanel.add(exitButton);
-            welcomeFrame.setContentPane(scrollPane);
+            buttonPanel.add(budgetButton);
+            buttonPanel.add(songLibraryButton);
+            buttonPanel.add(investmentButton);
+            buttonPanel.add(codeCrackerButton);
+            buttonPanel.add(numberGameButton);
+            buttonPanel.add(viewFilesButton);
+            buttonPanel.add(exitButton);
+            // Set up the main layout of welcomeFrame
+            welcomeFrame.setLayout(new BorderLayout());
+            welcomeFrame.add(welcomeLabelPanel, BorderLayout.NORTH); // Add welcomeLabelPanel to NORTH
+            welcomeFrame.add(scrollPane, BorderLayout.CENTER); // Add buttonPanel to CENTER
             welcomeFrame.addWindowListener(myWindowAdapter);
             welcomeFrame.pack();
             welcomeFrame.setLocationRelativeTo(null);
             welcomeFrame.setVisible(true);
-            // Close the login window
+// Close the login window
             frame.dispose();
             if (admin) {
                 int messageCount = checkMessageQueue();
@@ -1517,7 +1785,7 @@ public class LoginGUI implements ActionListener {
                 );
             }
         }
-        new windowsTerminalOpener(false, true);
+        new windowsTerminalOpener(true, true);
 
         boolean success = windowsTerminalOpener.isSuccess();
         if (success) {
@@ -1597,6 +1865,7 @@ public class LoginGUI implements ActionListener {
 
     public void InvestmentCalculator() {
         JFrame frame = new JFrame("Investment Calculator");
+        frame.setIconImage(icon.getImage());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension dimension = new Dimension(450, 200);
         frame.setPreferredSize(dimension);
@@ -1669,24 +1938,6 @@ public class LoginGUI implements ActionListener {
         frame.setVisible(true);
     }
 
-    private static void calculateInvestment(
-            JTextField principalField,
-            JTextField rateField,
-            JTextField yearsField,
-            JLabel resultLabel
-    ) {
-        double principal = Double.parseDouble(principalField.getText());
-        double rate = Double.parseDouble(rateField.getText());
-        int years = Integer.parseInt(yearsField.getText());
-
-        double result = principal * Math.pow(1 + rate / 100, years);
-        if (result >= 1000000000) {
-            resultLabel.setText("Future Value: A really big number");
-        } else {
-            resultLabel.setText("Future Value: " + String.format("%.2f", result));
-        }
-    }
-
     private void displayMessages() {
         if (messagesForAdminList.isEmpty()) {
             JOptionPane.showMessageDialog(
@@ -1698,12 +1949,13 @@ public class LoginGUI implements ActionListener {
             return;
         }
         JFrame frame = new JFrame("Messages", null);
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         try {
             getDisabledUsernames();
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
+
             JOptionPane.showMessageDialog(
                     null,
                     "An error occured\nError code " + e.getStackTrace(),
@@ -1808,15 +2060,6 @@ public class LoginGUI implements ActionListener {
         // updatenotificationcount();
     }
 
-    // Method to update the notification count and button text
-    // private void //updatenotificationcount() {
-    // if (notificationCount > 0) {
-    // displayMessages.setText("Display messages (" + notificationCount + ")");
-    // } else {
-    // displayMessages.setText("Display messages");
-    // }
-    // }
-
     // Method to check the queue size and update the notification count
     private int checkMessageQueue() {
         if (!messagesForAdminList.isEmpty()) {
@@ -1826,12 +2069,6 @@ public class LoginGUI implements ActionListener {
         }
         return 0;
     }
-
-    private List<Character> crackedPasswd;
-    private List<Character> characters;
-    private JTextArea outputTextArea;
-    private JPasswordField PasswordField;
-    private JButton crackbutton;
 
     public void CodeCracker() {
         crackedPasswd = new ArrayList<>();
@@ -1937,6 +2174,7 @@ public class LoginGUI implements ActionListener {
                 );
 
         JFrame frame = new JFrame("Code Cracker");
+        frame.setIconImage(icon.getImage());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLayout(new BorderLayout());
@@ -2027,6 +2265,7 @@ public class LoginGUI implements ActionListener {
                 String crackedPassword = crackedPasswd.toString();
                 crackedPassword = crackedPassword.replaceAll("[\\[\\], ]", "");
                 outputTextArea.append("\n\nPassword cracked: " + crackedPassword);
+                crackedPasswd.clear();
             }
         };
 
@@ -2137,6 +2376,7 @@ public class LoginGUI implements ActionListener {
                 );
 
         JFrame frame = new JFrame("Code Cracker");
+        frame.setIconImage(icon.getImage());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLayout(new BorderLayout());
@@ -2222,6 +2462,7 @@ public class LoginGUI implements ActionListener {
 
     private void SongLibraryGUI() {
         songFrame = new JFrame("Song Library");
+        songFrame.setIconImage(icon.getImage());
         songJPanel = new JPanel();
         songFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Set the layout of songJPanel to GridLayout
@@ -2454,8 +2695,6 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    private String currentSong;
-
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Stop")) {
             currentSong = songTitle;
@@ -2519,7 +2758,7 @@ public class LoginGUI implements ActionListener {
                     | IOException
                     | UnsupportedAudioFileException e
             ) {
-                // TODO Auto-generated catch block
+
                 JOptionPane.showMessageDialog(
                         null,
                         "An error occured\nError code " + e.getStackTrace(),
@@ -2584,7 +2823,7 @@ public class LoginGUI implements ActionListener {
         try {
             // Specify the path to your song files
             String filePath =
-                    musicFolderPath + "\\"+
+                    musicFolderPath + "\\" +
                             songTitle.toLowerCase().replace(" ", "_") +
                             ".wav";
             File audioFile = new File(filePath);
@@ -2663,8 +2902,6 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    private File videoFile;
-
     private void stopSong() {
         if (clip == null) {
             JOptionPane.showMessageDialog(
@@ -2688,7 +2925,7 @@ public class LoginGUI implements ActionListener {
                                         }
                                 );
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
+
                         JOptionPane.showMessageDialog(
                                 null,
                                 "An error occured\nError code " + e.getStackTrace(),
@@ -2721,9 +2958,25 @@ public class LoginGUI implements ActionListener {
         }
     }
 
+    // private int getCategoryID(String category) {
+    // int categoryID = -1;
+    // String query = "SELECT ID FROM budget WHERE Category = ?";
+    // try (PreparedStatement statement = connection2.prepareStatement(query)) {
+    // statement.setString(1, category);
+    // ResultSet resultSet = statement.executeQuery();
+    // if (resultSet.next()) {
+    // categoryID = resultSet.getInt("ID");
+    // }
+    // resultSet.close();
+    // } catch (SQLException e) {
+    // e.printStackTrace();
+    // }
+    // return categoryID;
+    // }
+
     private void viewMusicVideo(String videoFileName) {
         String videoFilePath =
-                musicFolderPath + "\\"+
+                musicFolderPath + "\\" +
                         videoFileName.toLowerCase().replace(" ", "_") +
                         ".mp4";
         videoFile = new File(videoFilePath);
@@ -2791,10 +3044,11 @@ public class LoginGUI implements ActionListener {
         }
         LocalDate currentDate = LocalDate.now();
         int dayOfMonth = currentDate.getDayOfMonth();
-
-        if (dayOfMonth == 1) {
-            // It's the first day of the month, clear the budget and subcategories databases
-            newMonth();
+        if (!cleared) {
+            if (dayOfMonth == 1) {
+                // It's the first day of the month, clear the budget and subcategories databases
+                newMonth();
+            }
         }
         String BudgetTable;
         String subcategoriesTable;
@@ -2816,7 +3070,7 @@ public class LoginGUI implements ActionListener {
         try {
             budgetTableExists = checkTableExists(BudgetTable);
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
+
             JOptionPane.showMessageDialog(
                     null,
                     "An error occured\nError code " + e.getStackTrace(),
@@ -2827,7 +3081,7 @@ public class LoginGUI implements ActionListener {
         try {
             subcategoriesTableExists = checkTableExists(subcategoriesTable);
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
+
             JOptionPane.showMessageDialog(
                     null,
                     "An error occured\nError code " + e.getStackTrace(),
@@ -2840,7 +3094,7 @@ public class LoginGUI implements ActionListener {
                 try {
                     createTables(BudgetTable, subcategoriesTable);
                 } catch (SQLException e) {
-                    // TODO Auto-generated catch block
+
                     JOptionPane.showMessageDialog(
                             null,
                             "An error occured\nError code " + e.getStackTrace(),
@@ -2956,6 +3210,7 @@ public class LoginGUI implements ActionListener {
 
             // Create the main frame and add the components
             JFrame budgetFrame = new JFrame("Budget Handling");
+            budgetFrame.setIconImage(icon.getImage());
             budgetFrame.getContentPane().setLayout(new BorderLayout());
             budgetFrame
                     .getContentPane()
@@ -3079,21 +3334,33 @@ public class LoginGUI implements ActionListener {
                 budgetFrame.dispose();
                 addIncome();
             });
-            // TODO add edit balance button
             JButton editBalanceButton = new JButton("Edit balance");
             editBalanceButton.addActionListener(e -> {
                 budgetFrame.dispose();
                 editCurrentBalance();
             });
-            // TODO add view income button
             JButton viewIncomeButton = new JButton("View Income");
             viewIncomeButton.addActionListener(e -> {
                 budgetFrame.dispose();
-                viewIncome();
+                try {
+                    viewIncome();
+                } catch (IOException ex) {
+                    try {
+                        errorLog.writeErrorLog(ex);
+                    } catch (IOException exc) {
+                        throw new RuntimeException(exc);
+                    }
+                    throw new RuntimeException(ex);
+                }
             });
             // TODO add add target goal button? Maybe
             // TODO add check to ensure I don't go over balance-$100
-            // TODO add whatif button to check if I have enough
+            JButton whatIfButton = new JButton("What if?");
+            whatIfButton.addActionListener(e1 -> {
+                String amount = JOptionPane.showInputDialog("How many products are there?");
+                new whatIf(icon, balance, Integer.parseInt(amount));
+            });
+
             addAmountButton.setVisible(false);
             deleteSubcategoryButton.setVisible(false);
 
@@ -3118,6 +3385,7 @@ public class LoginGUI implements ActionListener {
             budgetPanel.add(clearBudgetButton);
             budgetPanel.add(addAmountButton);
             budgetPanel.add(addIncomeButton);
+            budgetPanel.add(whatIfButton);
             budgetPanel.add(viewIncomeButton);
             budgetPanel.add(editBalanceButton);
             budgetPanel.add(deleteSubcategoryButton);
@@ -3148,8 +3416,9 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    private void viewIncome() {
+    private void viewIncome() throws IOException {
         JFrame frame = new JFrame("Income");
+        frame.setIconImage(icon.getImage());
         String query =
                 "SELECT amount, `date` FROM income WHERE `user` = '" + user + "'";
         try (PreparedStatement statement = connection2.prepareStatement(query)) {
@@ -3224,7 +3493,7 @@ public class LoginGUI implements ActionListener {
             try {
                 budget();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                errorLog.writeErrorLog(e);
                 JOptionPane.showMessageDialog(
                         null,
                         "An error occured\nError code " + e.getStackTrace(),
@@ -3268,6 +3537,7 @@ public class LoginGUI implements ActionListener {
         }
 
         JFrame editFrame = new JFrame("Edit Balance");
+        editFrame.setIconImage(icon.getImage());
         JPanel editPanel = new JPanel();
         Dimension dimension = new Dimension(300, 90);
         editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.PAGE_AXIS));
@@ -3351,15 +3621,6 @@ public class LoginGUI implements ActionListener {
         editFrame.setVisible(true);
     }
 
-    public static int convertMonthNameToNumber(String monthName) {
-        Month month = Month.valueOf(monthName.toUpperCase());
-        return month.getValue();
-    }
-
-    double balance = 0.0;
-
-    protected Object ignore;
-
     private void addIncome() {
         String getBalanceQuery = "SELECT * FROM total WHERE user = ?";
         try (
@@ -3391,6 +3652,7 @@ public class LoginGUI implements ActionListener {
 
         // Create and configure the GUI components
         frame = new JFrame("Add Income");
+        frame.setIconImage(icon.getImage());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(400, 200);
         frame.setLocationRelativeTo(null);
@@ -3502,11 +3764,11 @@ public class LoginGUI implements ActionListener {
                             try {
                                 budget();
                             } catch (IOException e1) {
-                                // TODO Auto-generated catch block
+
                                 e1.printStackTrace();
                             }
                         } catch (SQLException e1) {
-                            // TODO Auto-generated catch block
+
                             e1.printStackTrace();
                         }
                     }
@@ -3518,7 +3780,7 @@ public class LoginGUI implements ActionListener {
             try {
                 budget();
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
             }
         });
@@ -3718,7 +3980,7 @@ public class LoginGUI implements ActionListener {
                         "Budget Cleared",
                         JOptionPane.INFORMATION_MESSAGE
                 );
-
+                cleared = true;
                 try {
                     budget(); // Refresh the budget display
                 } catch (IOException e) {
@@ -3744,7 +4006,7 @@ public class LoginGUI implements ActionListener {
                 try {
                     budget();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
+
                     JOptionPane.showMessageDialog(
                             null,
                             "An error occured\nError code " + e.getStackTrace(),
@@ -3756,44 +4018,17 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    private static void createTables(
-            String budget_table,
-            String subcategories_Table
-    ) throws SQLException {
-        String createBudgetTableQuery =
-                "CREATE TABLE IF NOT EXISTS " +
-                        budget_table +
-                        " (" +
-                        "Category VARCHAR(50) NOT NULL, " +
-                        "MaxAllowedMoney DOUBLE, " +
-                        "AmountSpent DOUBLE, " +
-                        "user VARCHAR(50) NOT NULL, " +
-                        "PRIMARY KEY (Category, user)" +
-                        ")";
-
-        String createSubcategoriesTableQuery =
-                "CREATE TABLE IF NOT EXISTS " +
-                        subcategories_Table +
-                        " (" +
-                        "category_name VARCHAR(50) NOT NULL, " +
-                        "subcategory_name VARCHAR(50) NOT NULL DEFAULT '', " +
-                        "AmountSpent DOUBLE, " +
-                        "user VARCHAR(50) NOT NULL, " +
-                        "PRIMARY KEY (category_name, subcategory_name, user)" +
-                        ")";
-
-        try (
-                PreparedStatement budgetStatement = connection2.prepareStatement(
-                        createBudgetTableQuery
-                );
-                PreparedStatement subcategoriesStatement = connection2.prepareStatement(
-                        createSubcategoriesTableQuery
-                )
-        ) {
-            budgetStatement.executeUpdate();
-            subcategoriesStatement.executeUpdate();
-        }
-    }
+    // private void updateAmountSpent(String category, double spentAmount) {
+    // String query = "UPDATE budget SET AmountSpent = AmountSpent + ? WHERE
+    // Category = ?";
+    // try (PreparedStatement statement = connection2.prepareStatement(query)) {
+    // statement.setDouble(1, spentAmount);
+    // statement.setString(2, category);
+    // statement.executeUpdate();
+    // } catch (SQLException e) {
+    // e.printStackTrace();
+    // }
+    // }
 
     private void clearBudget() {
         String budget_table = "";
@@ -3862,7 +4097,7 @@ public class LoginGUI implements ActionListener {
             try {
                 budget();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+
                 JOptionPane.showMessageDialog(
                         null,
                         "An error occured\nError code " + e.getStackTrace(),
@@ -3873,25 +4108,10 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    // private int getCategoryID(String category) {
-    // int categoryID = -1;
-    // String query = "SELECT ID FROM budget WHERE Category = ?";
-    // try (PreparedStatement statement = connection2.prepareStatement(query)) {
-    // statement.setString(1, category);
-    // ResultSet resultSet = statement.executeQuery();
-    // if (resultSet.next()) {
-    // categoryID = resultSet.getInt("ID");
-    // }
-    // resultSet.close();
-    // } catch (SQLException e) {
-    // e.printStackTrace();
-    // }
-    // return categoryID;
-    // }
-
     private void addAmountSpent(String category, String maxMoney) {
         // Create the main frame
         JFrame addAmountFrame = new JFrame("Add Amount Spent");
+        addAmountFrame.setIconImage(icon.getImage());
         addAmountFrame.setLayout(new BorderLayout());
 
         // Create the category label
@@ -3978,7 +4198,7 @@ public class LoginGUI implements ActionListener {
                 // try {
                 // budget();
                 // } catch (IOException e1) {
-                // // TODO Auto-generated catch block
+                //
                 // e1.printStackTrace();
                 // }
             }
@@ -4043,7 +4263,7 @@ public class LoginGUI implements ActionListener {
                         JOptionPane.INFORMATION_MESSAGE
                 );
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
             }
 
@@ -4100,18 +4320,9 @@ public class LoginGUI implements ActionListener {
         addAmountFrame.setVisible(true);
     }
 
-    private static boolean checkTableExists(String tableName)
-            throws SQLException {
-        DatabaseMetaData metadata = connection2.getMetaData();
-        try (
-                ResultSet resultSet = metadata.getTables(null, null, tableName, null)
-        ) {
-            return resultSet.next();
-        }
-    }
-
     private void createBudget() {
         JFrame frame = new JFrame("Create Budget");
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         Dimension dimension = new Dimension(350, 150);
@@ -4296,6 +4507,7 @@ public class LoginGUI implements ActionListener {
 
     private void editBudgetDetails(String category, String maxMoney) {
         JFrame detailsFrame = new JFrame("Edit Budget Details");
+        detailsFrame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
@@ -4325,7 +4537,7 @@ public class LoginGUI implements ActionListener {
             try {
                 budget();
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
             }
         });
@@ -4336,7 +4548,7 @@ public class LoginGUI implements ActionListener {
             try {
                 budget();
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
             }
         });
@@ -4431,7 +4643,7 @@ public class LoginGUI implements ActionListener {
                 "UPDATE master_budget SET Category = ?, MaxAllowedMoney = ? WHERE Category = ? AND user = ?";
         try (
                 PreparedStatement statement = connection2.prepareStatement(query);
-                PreparedStatement statement2 = connection2.prepareStatement(query2);
+                PreparedStatement statement2 = connection2.prepareStatement(query2)
         ) {
             statement.setString(1, newCategory);
             statement.setString(2, newMaxMoney);
@@ -4453,20 +4665,9 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    // private void updateAmountSpent(String category, double spentAmount) {
-    // String query = "UPDATE budget SET AmountSpent = AmountSpent + ? WHERE
-    // Category = ?";
-    // try (PreparedStatement statement = connection2.prepareStatement(query)) {
-    // statement.setDouble(1, spentAmount);
-    // statement.setString(2, category);
-    // statement.executeUpdate();
-    // } catch (SQLException e) {
-    // e.printStackTrace();
-    // }
-    // }
-
     public void deleteUserAccounts() {
         JFrame frame = new JFrame("Delete User Accounts");
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         Dimension panelSize = new Dimension(300, 238);
@@ -4618,11 +4819,7 @@ public class LoginGUI implements ActionListener {
             statement.setString(1, username);
             int rowsAffected = statement.executeUpdate();
 
-            if (rowsAffected > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return rowsAffected > 0;
         } catch (SQLException e) {
             // Handle any SQL exceptions here
             JOptionPane.showMessageDialog(
@@ -4638,6 +4835,7 @@ public class LoginGUI implements ActionListener {
     private void displayAllUsers() {
         // LogFileViewer viewer = new LogFileViewer();
         JFrame frame = new JFrame("All Users");
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         Dimension panelSize = new Dimension(500, 400);
@@ -4708,6 +4906,7 @@ public class LoginGUI implements ActionListener {
 
     public void switchUser() {
         JFrame frame = new JFrame("Switch User");
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         Dimension panelSize = new Dimension(300, 100);
@@ -4814,13 +5013,13 @@ public class LoginGUI implements ActionListener {
                     try {
                         setAdmin(isUserAdmin());
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
+
                         e1.printStackTrace();
                     }
                     try {
                         getUserValue(currentUsername, currentPassword);
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
+
                         e1.printStackTrace();
                     }
                     openWelcomeWindow(isAdmin());
@@ -4858,6 +5057,7 @@ public class LoginGUI implements ActionListener {
     private void updateUserGroup() {
         welcomeFrame.dispose();
         JFrame updateUserGroupFrame = new JFrame("Update User Group");
+        updateUserGroupFrame.setIconImage(icon.getImage());
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Create the scrollable panel
@@ -5131,11 +5331,7 @@ public class LoginGUI implements ActionListener {
             int rowsAffected = statement.executeUpdate();
 
             // Check if any rows were returned
-            if (rowsAffected > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return rowsAffected > 0;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     frame,
@@ -5196,6 +5392,7 @@ public class LoginGUI implements ActionListener {
     public void updateUserAccountStatus() {
         // GUI setup
         JFrame frame = new JFrame("User Account Status");
+        frame.setIconImage(icon.getImage());
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         JPanel panel = new JPanel();
@@ -5401,10 +5598,7 @@ public class LoginGUI implements ActionListener {
     }
 
     private boolean accountDisabled(String username) {
-        if (disabledUsers.contains(username)) {
-            return true;
-        }
-        return false;
+        return disabledUsers.contains(username);
     }
 
     private boolean updateAccountStatusInDatabase(
@@ -5491,7 +5685,7 @@ public class LoginGUI implements ActionListener {
             try {
                 updateUsernameInDatabase(newUsername);
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
+
                 JOptionPane.showMessageDialog(
                         null,
                         "An error occured\nError code " + e.getStackTrace(),
@@ -5518,6 +5712,32 @@ public class LoginGUI implements ActionListener {
         }
     }
 
+    // private boolean adminPrompt(String username, String passwordHash) {
+    // String query = "SELECT * FROM users WHERE username = ? AND password = ? AND
+    // `group` = 'admin'";
+    // try (PreparedStatement statement = connection.prepareStatement(query)) {
+    // statement.setString(1, username);
+    // statement.setString(2, passwordHash);
+    // try (ResultSet resultSet = statement.executeQuery()) {
+    // if (resultSet.next()) {
+    // isAdmin = true;
+    // return true;
+    // } else {
+    // isAdmin = false;
+    // JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login
+    // Error",
+    // JOptionPane.ERROR_MESSAGE);
+    // String formattedTime = getFormattedTime();
+    // writeLog("Failed admin login attempt at " + formattedTime);
+    // return false;
+    // }
+    // }
+    // } catch (SQLException e) {
+    // e.printStackTrace();
+    // return false;
+    // }
+    // }
+
     private void setNewUser() throws SQLException {
         // LocalTime currentTime = LocalTime.now();
         // int hour = currentTime.getHour();
@@ -5527,6 +5747,7 @@ public class LoginGUI implements ActionListener {
         usernameTextField = new JTextField(20);
         passwordField = new JPasswordField(20);
         JFrame newUserframe = new JFrame("Set new User");
+        newUserframe.setIconImage(icon.getImage());
 
         // Set up the login form
         JPanel newUserPanel = new JPanel();
@@ -5816,11 +6037,7 @@ public class LoginGUI implements ActionListener {
             int rowsAffected = statement.executeUpdate();
 
             // Check if any rows were returned
-            if (rowsAffected > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return rowsAffected > 0;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     null,
@@ -5852,11 +6069,7 @@ public class LoginGUI implements ActionListener {
             ResultSet resultSet2 = statement2.executeQuery();
 
             // Check if any rows were returned
-            if (resultSet.next() || resultSet2.next()) {
-                return true;
-            } else {
-                return false;
-            }
+            return resultSet.next() || resultSet2.next();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     frame,
@@ -5875,16 +6088,9 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    private static int generateUniqueId() {
-        Random random = new Random();
-        int min = 10000000; // Minimum value for the random number
-        int max = 99999999; // Maximum value for the random number
-        int uniqueId = random.nextInt(max - min + 1) + min;
-        return uniqueId;
-    }
-
     private void promptAdminCredentials() {
         JFrame UAframe = new JFrame("User Authentication");
+        UAframe.setIconImage(icon.getImage());
         JPanel UC = new JPanel();
         // Set up the login form
         UC.setLayout(new BoxLayout(UC, BoxLayout.PAGE_AXIS));
@@ -6071,7 +6277,6 @@ public class LoginGUI implements ActionListener {
                                 );
                             }
                             switchUser();
-                            return;
                         }
                     } else {
                         setAdmin(false);
@@ -6111,7 +6316,6 @@ public class LoginGUI implements ActionListener {
                                     JOptionPane.ERROR_MESSAGE
                             );
                             initializeGUI();
-                            return;
                         } else {
                             JOptionPane.showMessageDialog(
                                     frame,
@@ -6142,32 +6346,6 @@ public class LoginGUI implements ActionListener {
 
         return disabledUsers;
     }
-
-    // private boolean adminPrompt(String username, String passwordHash) {
-    // String query = "SELECT * FROM users WHERE username = ? AND password = ? AND
-    // `group` = 'admin'";
-    // try (PreparedStatement statement = connection.prepareStatement(query)) {
-    // statement.setString(1, username);
-    // statement.setString(2, passwordHash);
-    // try (ResultSet resultSet = statement.executeQuery()) {
-    // if (resultSet.next()) {
-    // isAdmin = true;
-    // return true;
-    // } else {
-    // isAdmin = false;
-    // JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login
-    // Error",
-    // JOptionPane.ERROR_MESSAGE);
-    // String formattedTime = getFormattedTime();
-    // writeLog("Failed admin login attempt at " + formattedTime);
-    // return false;
-    // }
-    // }
-    // } catch (SQLException e) {
-    // e.printStackTrace();
-    // return false;
-    // }
-    // }
 
     private void updateUsernameInDatabase(String newUsername)
             throws SQLException {
@@ -6448,7 +6626,6 @@ public class LoginGUI implements ActionListener {
                 option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION
         ) {
             openWelcomeWindow(isAdmin);
-            return;
         }
     }
 
@@ -6495,7 +6672,7 @@ public class LoginGUI implements ActionListener {
                     currentDateEqualsDatabaseDate =
                             dateInDatabase.toString().equals(sqlDate.toString());
                 } else {
-                    System.out.println(sqlDate.toString());
+                    System.out.println(sqlDate);
                 }
             }
 
@@ -6512,7 +6689,6 @@ public class LoginGUI implements ActionListener {
                         JOptionPane.INFORMATION_MESSAGE
                 );
                 // openWelcomeWindow(isAdmin);
-                return;
             } else {
                 // Display failure message
                 JOptionPane.showMessageDialog(
@@ -6534,18 +6710,6 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    public static String generateRandomSalt() {
-        SecureRandom random = new SecureRandom();
-        byte[] saltBytes = new byte[16]; // 16 bytes = 128 bits
-        random.nextBytes(saltBytes);
-        StringBuilder sb = new StringBuilder();
-        for (byte b : saltBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        System.out.println(sb.toString());
-        return sb.toString();
-    }
-
     private String oldhashPassword(char[] password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -6562,26 +6726,9 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    // public static String hashPassword(char[] password, String salt) {
-    public static String hashPassword(char[] password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashedPassword = md.digest(
-                    new String(password).getBytes(StandardCharsets.UTF_8)
-            );
-            // Convert the hashed password to a hexadecimal string
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashedPassword) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void readLog() {
         JFrame frame = new JFrame("Log File");
+        frame.setIconImage(icon.getImage());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         Dimension panelSize = new Dimension(300, 400);
@@ -6642,121 +6789,6 @@ public class LoginGUI implements ActionListener {
         frame.getContentPane().add(panel);
         frame.pack();
         frame.setVisible(true);
-    }
-
-    private static void writeLog(String logEntry) {
-        try (
-                PrintWriter out = new PrintWriter(
-                        new FileWriter(
-                                logFilePath,
-                                true
-                        )
-                )
-        ) {
-            out.println(logEntry);
-        } catch (IOException e) {
-            System.out.println("Error writing to log file: " + e.getMessage());
-        }
-    }
-
-    private static void writeDatabase(
-            int id,
-            String user,
-            String username,
-            String password,
-            String userGroup,
-            String Status,
-            Object lastLogin,
-            String salt,
-            int expTime
-    ) throws SQLException {
-        String query =
-                "INSERT INTO users (id, name, username, password, `group`, status, last_login, salt, expiration_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, id);
-            statement.setString(2, user);
-            statement.setString(3, username);
-            statement.setString(4, password);
-            statement.setString(5, userGroup);
-            statement.setString(6, Status);
-            statement.setString(7, (String) lastLogin);
-            statement.setString(8, salt);
-            statement.setInt(9, expTime);
-            statement.executeUpdate();
-        }
-    }
-
-    private static void showFirstRunPopup() throws InterruptedException {
-        JFrame popupFrame = new JFrame();
-        Object[] options = {"Yes", "No", "Close"};
-
-        int choice = JOptionPane.showOptionDialog(
-                popupFrame,
-                "Have you logged in before?",
-                "First Run",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
-
-        if (choice == JOptionPane.YES_OPTION) {
-            // Process the username and password as needed
-            loginGUI = new LoginGUI();
-        } else if (choice == JOptionPane.NO_OPTION) {
-            // Display default username and password
-            JOptionPane.showMessageDialog(
-                    popupFrame,
-                    "Default username: admin\nDefault password: admin",
-                    "Default Credentials",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            loginGUI = new LoginGUI();
-            try (
-                    PreparedStatement checkUserExists = connection.prepareStatement(
-                            "SELECT COUNT(*) FROM users WHERE name=?"
-                    );
-                    PreparedStatement insertUser = connection.prepareStatement(
-                            "INSERT INTO users (id, name, username, password, `group`, status, last_login, salt, expiration_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    );
-                    PreparedStatement enableUser = connection.prepareStatement(
-                            "UPDATE users SET status='Enabled' WHERE name=?"
-                    )
-            ) {
-                // Check if the user exists
-                checkUserExists.setString(1, "default");
-                ResultSet resultSet = checkUserExists.executeQuery();
-                resultSet.next();
-                int userCount = resultSet.getInt(1);
-
-                if (userCount == 0) {
-                    // User does not exist, insert new user with the provided values
-                    insertUser.setInt(1, 489348); // id
-                    insertUser.setString(2, "default"); // name
-                    insertUser.setString(3, "admin"); // username
-                    insertUser.setString(4, "596f5147c59e036063f65ba59db85160e4d920c43ad2a6197ca451b1ebbb844c"); // password
-                    insertUser.setString(5, "Default"); // group
-                    insertUser.setString(6, "Enabled"); // status
-                    // Assuming last_login and expiration_time are of type TIMESTAMP and salt is VARCHAR
-                    insertUser.setDate(7, null); // last_login
-                    insertUser.setString(8, "8fc1191da3a3ed8a3b5972dcbb08801b"); // salt
-                    insertUser.setString(9, null); // expiration_time (null for now)
-                    insertUser.executeUpdate();
-                    System.out.println("User 'default' created and disabled.");
-                } else {
-                    // User exists, update status to 'Enabled'
-                    enableUser.setString(1, "default");
-                    enableUser.executeUpdate();
-                    System.out.println("User 'default' enabled successfully.");
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        } else {
-            // Close the program
-            System.exit(0);
-        }
     }
 
     public void clearLogs() {
@@ -6842,35 +6874,22 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    public static void main(String[] args) {
-        // Load file paths from "file_paths.txt"
-        try {
-            loadFilePaths();
+    public class MyWindowAdapter extends WindowAdapter {
 
-            // Read the password from the password file
-            serverPassword = new String(Files.readAllBytes(Paths.get(passwordFilePath)));
-            System.out.println("Password retrieved successfully.");
-             showFirstRunPopup(); // Call to your method (not provided here)
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        // Override the windowClosing method
+        @Override
+        public void windowClosing(WindowEvent e) {
+            // Call your disconnectFromDatabase method
+            JFrame frame = (JFrame) e.getSource();
+            frame.dispose();
+            try {
+                disconnectFromDatabase();
+            } catch (SQLException ex) {
+                // Handle any SQLExceptions
+                ex.printStackTrace();
+            }
+            // Dispose the frame
         }
-    }
-
-    private static void loadFilePaths() throws IOException {
-        Properties properties = new Properties();
-        try (BufferedReader reader = new BufferedReader(new FileReader("file_paths.txt"))) {
-            properties.load(reader);
-            passwordFilePath = properties.getProperty("Password");
-            logFilePath = properties.getProperty("Log");
-            messagesFilePath = properties.getProperty("Messages");
-            musicFolderPath = properties.getProperty("Music");
-        }
-        passwordFilePath=passwordFilePath.replace("file: ","");
-        musicFolderPath = musicFolderPath.replace("folder: ","");
-        messagesFilePath = messagesFilePath.replace("file: ","");
-        logFilePath = logFilePath.replace("file: ","");
     }
 
 }

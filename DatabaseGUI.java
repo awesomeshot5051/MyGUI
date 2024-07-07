@@ -1,10 +1,9 @@
+import com.mysql.cj.log.Log;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,7 +20,7 @@ public class DatabaseGUI {
     private static Connection connection;
     private static Connection connection2;
     private static String databaseName;
-
+    private static JFrame welcomeWindow;
     public static void main(String[] args) {
         // Load file paths from "file_paths.txt"
         try {
@@ -38,6 +37,9 @@ public class DatabaseGUI {
             e.printStackTrace();
         }
     }
+public static void setWelcomeWindow(JFrame frame){
+        welcomeWindow=frame;
+}
 
     private static void useDatabase(String dbName) {
         String useCommand = "USE " + dbName;
@@ -58,7 +60,15 @@ public class DatabaseGUI {
 
             // Create a frame to display the database buttons
             JFrame frame = new JFrame("Choose Database");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setLocationRelativeTo(null);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    frame.dispose();
+                    welcomeWindow.setVisible(true);
+                }
+            });
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setLayout(new FlowLayout()); // Use FlowLayout for button alignment
 
             // Iterate through the result set and create a button for each database
@@ -70,6 +80,7 @@ public class DatabaseGUI {
             JButton exitButton = new JButton("Exit");
             exitButton.addActionListener(e->{
                 frame.dispose();
+                welcomeWindow.setVisible(true);
 //                System.exit(0);
             });
             frame.add(exitButton);
@@ -121,7 +132,15 @@ public class DatabaseGUI {
     private static void databaseInteraction() throws SQLException {
         // Create frame
         JFrame frame = new JFrame("Command Executor for Database " + databaseName);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                frame.dispose();
+                welcomeWindow.setVisible(true);
+            }
+        });
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(400, 200);
 
         // Create text field
@@ -164,6 +183,12 @@ public class DatabaseGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String command = commandField.getText();
+                if(getCommandType(command).equalsIgnoreCase("use")){
+                    String[] words = command.split("\\s+"); // Split the command by spaces
+                    databaseName = words[1]; // Compare the first word with the keyword
+                    databaseName=databaseName.replace(";","");
+                    frame.setTitle("Command Executor for Database " + databaseName); //
+                }
                 executeCommand(command, commandHistory, commandField);
                 commandField.setText(""); // Clear the text field
             }
@@ -181,6 +206,8 @@ public class DatabaseGUI {
         // Display the window
         frame.setVisible(true);
     }
+
+
 
     private static void executeCommand(String command, Stack<String> commandHistory, JTextField commandField) {
         commandHistoryManager.addCommand(command); // Store the command in history
@@ -203,7 +230,9 @@ public class DatabaseGUI {
             return "drop";
         } else if (beginsWith(command, "select")) {
             return "select";
-        } else {
+        } else if(beginsWith(command,"show")) {
+            return "show";
+        }else {
             return "unknown";
         }
     }

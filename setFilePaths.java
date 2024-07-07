@@ -19,18 +19,23 @@ public class setFilePaths {
             JButton setLogFilePathButton = new JButton("Set Log File Path");
             JButton setMessagesFilePathButton = new JButton("Set Messages File Path");
             JButton setMusicFolderPathButton = new JButton("Set Music Folder Path");
-
+            JButton setErrorLogFilePathButton = new JButton("Set Error Log File Path");
+            JButton exitButton = new JButton("Exit");
             // Add action listeners
             setPasswordFilePathButton.addActionListener(e -> chooseFile(frame, "Password file"));
             setLogFilePathButton.addActionListener(e -> chooseFile(frame, "Log file"));
             setMessagesFilePathButton.addActionListener(e -> chooseFile(frame, "Messages file"));
             setMusicFolderPathButton.addActionListener(e -> chooseDirectory(frame, "Music folder"));
+            setErrorLogFilePathButton.addActionListener(e->chooseFile(frame,"Error Log File"));
+            exitButton.addActionListener(e->frame.dispose());
 
             // Add buttons to frame
             frame.add(setPasswordFilePathButton);
             frame.add(setLogFilePathButton);
             frame.add(setMessagesFilePathButton);
             frame.add(setMusicFolderPathButton);
+            frame.add(setErrorLogFilePathButton);
+            frame.add(exitButton);
 
             // Display the frame
             frame.pack();

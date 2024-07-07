@@ -7,14 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 
 public class CodeCracker {
     private List<Character> crackedPasswd;
@@ -24,8 +17,10 @@ public class CodeCracker {
     private JButton crackButton;
     private boolean isAdmin;
     private StringBuilder crackedPassword;
+    private ImageIcon icon;
 
     public CodeCracker(LoginGUI loginGUI) {
+        icon = IconFinder.findIcon();
         this.isAdmin = LoginGUI.isAdmin();
         crackedPasswd = new ArrayList<>();
         characters = new ArrayList<>(Arrays.asList(
@@ -37,6 +32,7 @@ public class CodeCracker {
                 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
 
         JFrame frame = new JFrame("Code Cracker");
+        frame.setIconImage(icon.getImage());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLayout(new BorderLayout());
@@ -89,10 +85,10 @@ public class CodeCracker {
                 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
                 'i', 'j', 'k', 'l', 'm', 'n',
                 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'));
-        characters = new ArrayList<>();
-        for (int i = 32; i <= 2556; i++) {
-            characters.add((char) i);
-        }
+//        characters = new ArrayList<>();
+//        for (int i = 32; i <= 2556; i++) {
+//            characters.add((char) i);
+//        }
         System.out.println(characters + " " + characters.size());
         JFrame frame = new JFrame("Code Cracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -121,19 +117,17 @@ public class CodeCracker {
         frame.add(inputPanel, BorderLayout.NORTH);
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
-        crackButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                crackedPasswd = new ArrayList<>();
-                String password = passwordField.getText().trim();
-                startCracking(password);
-            }
+        crackButton.addActionListener (_ -> {
+            crackedPasswd = new ArrayList<>();
+            String password = passwordField.getText().trim();
+            startCracking(password);
         });
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
     public void startCracking(String password) {
+        crackedPasswd = new ArrayList<>();
         SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -181,6 +175,7 @@ public class CodeCracker {
                 String crackedPassword = crackedPasswd.toString();
                 crackedPassword = crackedPassword.replaceAll("[\\[\\], ]", "");
                 outputTextArea.append("\n\nPassword cracked: " + crackedPassword);
+                crackedPasswd = new ArrayList<>();
             }
         };
 

@@ -2653,3 +2653,240 @@ Successful login at 06:50:07 PM by Trae
 Successful login at 06:51:15 PM by Trae as user1
 Trae exited user1's account at 06:52:16 PM
 Successful login at 12:45:39 PM by Trae
+Successful login at 11:29:42 AM by Trae
+Successful login at 11:39:12 AM by Trae
+Successful login at 11:40:09 AM by Trae
+Successful login at 11:43:03 AM by Trae
+Successful login at 11:44:00 AM by Trae
+Trae has updated user1 to group type of SuperAdmin
+Successful login at 11:45:16 AM by Trae as user1
+Trae exited user1's account at 11:45:23 AM
+Trae has updated user1 to group type of Admin
+Trae has updated admin to group type of SuperAdmin
+Successful login at 11:46:04 AM by Trae as admin
+Trae has updated s412924 from Enabled to Disabled at 11:46:09 AM as admin
+Trae has updated s412924 from Disabled to Enabled at 11:46:13 AM as admin
+Trae is accessing the log files as admin at + 11:46:24 AM.
+Trae exited admin's account at 11:48:24 AM
+Trae is accessing the log files at 11:48:27 AM.
+Trae is accessing the log files at 11:48:48 AM.
+Trae is accessing the log files at 11:48:58 AM.
+Trae is accessing the log files at 11:49:13 AM.
+Failed attempt at 11:49:52 AM
+Successful login at 11:49:56 AM by Trae
+Trae is accessing the log files at 11:49:58 AM.
+Successful login at 11:51:27 AM by Trae
+Trae is accessing the log files at 11:51:29 AM.
+Trae is accessing the log files at 11:52:07 AM.
+Trae is accessing the log files at 11:54:30 AM.
+Successful login at 11:55:32 AM by Trae
+Trae is accessing the log files at 11:55:34 AM.
+Successful login at 11:57:17 AM by Trae
+Trae is accessing the log files at 11:57:20 AM.
+Trae is accessing the log files at 11:58:06 AM.
+Successful login at 12:00:48 PM by Trae
+Trae is accessing the log files at 12:00:55 PM.
+Successful login at 12:07:01 PM by Trae
+Trae is accessing the log files at 12:07:12 PM.
+Successful login at 12:10:19 PM by Trae
+Trae is accessing the log files at 12:10:21 PM.
+Trae is accessing the log files at 12:12:02 PM.
+Trae Exited at 12:12:09 PM
+Successful login at 12:18:29 PM by Trae
+Trae Exited at 12:18:52 PM
+Successful login at 12:19:16 PM by admin
+Warning admin has attempted to set Trae, the original SuperAdmin account, and creator to type Admin. admin will be deleted on next logout. This action cannot be revoked.
+Successful login at 12:21:05 PM by admin as Trae
+admin exited Trae's account at 12:21:14 PM
+admin Exited at 12:21:27 PM
+Successful login at 12:21:36 PM by Trae
+Trae Exited at 12:25:23 PM
+Successful login at 12:29:41 PM by Trae
+Trae Exited at 12:29:47 PM
+Successful login at 12:30:31 PM by admin
+admin's Password changed successfully at 12:37:45 PM by admin
+admin Exited at 12:37:47 PM
+Failed attempt at 12:37:55 PM
+Failed attempt at 12:38:10 PM
+Failed attempt at 12:54:02 PM
+Failed attempt at 12:54:11 PM
+Failed attempt at 12:55:31 PM
+Failed attempt at 12:56:44 PM
+ Exited at 01:12:20 PM
+Failed attempt at 01:12:31 PM
+Failed attempt at 01:13:17 PM by a disabled user.
+Successful login at 01:13:28 PM by admin
+admin Exited at 01:13:39 PM
+Successful login at 10:42:14 AM by admin
+Successful login at 10:42:22 AM by admin as Trae
+admin has updated admin to group type of Standard as Trae
+admin exited Trae's account at 10:42:33 AM
+admin Exited at 10:42:37 AM
+Successful login at 10:42:43 AM by Trae
+Successful login at 10:42:48 AM by Trae as admin
+Trae exited admin's account at 10:44:18 AM
+Trae has updated admin to group type of Admin
+Successful login at 10:44:32 AM by Trae as admin
+Trae exited admin's account at 10:46:48 AM
+Successful login at 11:05:01 AM by Trae as admin
+Trae exited admin's account at 11:09:12 AM
+Successful login at 11:09:16 AM by Trae as user1
+Trae exited user1's account at 11:09:18 AM
+Successful login at 11:09:21 AM by Trae as Dave
+Successful login at 11:11:30 AM by Trae
+Failed attempt at 11:23:03 AM by a disabled user.
+ Exited at 11:24:40 AM
+ Exited at 11:30:17 AM
+ Exited at 11:31:17 AM
+New user: Trae created successfully at 11:48:41 AM as a SuperAdmin by default
+default Exited at 11:49:16 AM
+New user: Trae created successfully at 11:51:36 AM as a SuperAdmin by default
+ Exited at 11:51:40 AM
+Successful login at 11:51:54 AM by Trae
+Successful login at 12:57:45 PM by Trae
+Trae Exited at 01:03:30 PM
+Trae Exited at 03:18:58 PM
+Successful login at 03:56:37 PM by Trae
+Successful login at 04:01:43 PM by Trae
+Successful login at 04:02:28 PM by Trae
+Successful login at 04:05:18 PM by Trae
+Successful login at 04:06:37 PM by Trae
+Successful login at 04:09:26 PM by Trae
+Successful login at 04:12:11 PM by Trae
+Trae Exited at 04:12:31 PM
+Successful login at 04:12:37 PM by admin
+admin Exited at 04:13:40 PM
+Successful login at 04:13:49 PM by Trae
+Trae Exited at 04:15:13 PM
+Successful login at 04:15:19 PM by Trae
+Trae Exited at 04:15:31 PM
+Failed attempt at 04:16:20 PM
+Failed attempt at 04:16:21 PM
+Failed attempt at 04:16:22 PM
+Failed attempt at 04:16:22 PM
+Failed attempt at 04:16:23 PM
+Failed attempt at 04:16:32 PM
+Failed attempt at 04:16:33 PM
+Failed attempt at 04:16:33 PM
+Failed attempt at 04:16:34 PM
+Failed attempt at 04:16:34 PM
+Failed attempt at 04:16:35 PM
+Successful login at 04:16:55 PM by Trae
+New user: DisabledUser created successfully at 04:17:30 PM as a Admin by Trae
+Trae Exited at 04:17:33 PM
+Successful login at 04:17:44 PM by DisabledUser
+DisabledUser Exited at 04:17:47 PM
+Successful login at 04:17:53 PM by Trae
+Trae has updated disableduser from Enabled to Disabled at 04:17:58 PM
+Trae Exited at 04:18:01 PM
+Failed attempt at 04:18:15 PM by a disabled user.
+Successful login at 04:18:22 PM by Trae
+Trae Exited at 04:19:45 PM
+Successful login at 04:37:14 PM by Trae
+Successful login at 04:38:06 PM by Trae
+Successful login at 04:39:30 PM by Trae
+Successful login at 04:40:41 PM by Trae
+Successful login at 04:42:26 PM by Trae
+Successful login at 01:35:11 PM by Trae
+Successful login at 01:37:33 PM by Trae
+ Exited at 04:51:12 PM
+Successful login at 04:51:18 PM by Trae
+Successful login at 04:55:58 PM by Trae
+Successful login at 05:14:16 PM by Trae
+Successful login at 05:15:52 PM by Trae
+Trae Exited at 05:15:57 PM
+Successful login at 05:19:40 PM by Trae
+Successful login at 05:20:26 PM by Trae
+Successful login at 05:24:04 PM by Trae
+Successful login at 05:30:49 PM by Trae
+Successful login at 05:30:59 PM by Trae
+Successful login at 05:31:12 PM by Trae
+Successful login at 05:31:41 PM by Trae
+Successful login at 05:31:55 PM by Trae
+Trae Exited at 05:32:04 PM
+Successful login at 05:32:09 PM by Trae
+Successful login at 05:39:43 PM by Trae
+Successful login at 05:43:10 PM by Trae
+Successful login at 05:43:44 PM by Trae
+Successful login at 05:44:38 PM by Trae
+Successful login at 05:52:43 PM by Trae
+Successful login at 05:56:36 PM by Trae
+Successful login at 06:00:14 PM by Trae
+Successful login at 06:09:04 PM by Trae
+Successful login at 06:10:01 PM by Trae
+Trae Exited at 06:16:31 PM
+Successful login at 06:21:04 PM by Trae
+Successful login at 06:24:05 PM by Trae
+Successful login at 06:26:53 PM by Trae
+Trae is accessing the log files at 06:27:02 PM.
+Successful login at 06:28:33 PM by Trae
+Successful login at 06:30:42 PM by Trae
+Successful login at 06:34:09 PM by Trae
+Successful login at 09:09:13 AM by Trae
+Trae Exited at 09:09:25 AM
+Successful login at 09:17:01 AM by Trae
+Successful login at 09:18:24 AM by Trae
+Successful login at 09:19:44 AM by Trae
+Successful login at 09:28:18 AM by Trae
+Successful login at 09:28:55 AM by Trae
+Successful login at 09:30:14 AM by Trae
+Successful login at 09:31:11 AM by Trae
+Successful login at 09:32:33 AM by Trae
+Successful login at 09:38:45 AM by Trae
+Successful login at 09:48:39 AM by Trae
+Successful login at 09:49:40 AM by Trae
+Successful login at 09:52:43 AM by Trae
+Successful login at 10:01:23 AM by Trae
+Successful login at 10:02:02 AM by Trae
+Successful login at 10:02:28 AM by Trae
+Successful login at 10:03:12 AM by Trae
+Trae Exited at 10:04:45 AM
+Failed attempt at 10:04:50 AM by a disabled user.
+Successful login at 10:05:36 AM by Trae
+Successful login at 10:08:34 AM by Trae
+Successful login at 10:10:24 AM by Trae
+ Exited at 10:10:46 AM
+Successful login at 10:10:50 AM by Trae
+Trae Exited at 10:11:39 AM
+Successful login at 10:11:55 AM by Trae
+Trae Exited at 10:11:58 AM
+Failed attempt at 10:12:02 AM by a disabled user.
+Failed attempt at 10:16:56 AM by a disabled user.
+ Exited at 10:19:55 AM
+Failed attempt at 10:20:06 AM by a disabled user.
+Successful login at 10:20:10 AM by Trae
+Trae Exited at 10:20:44 AM
+Successful login at 10:28:06 AM by Trae
+Successful login at 03:38:52 PM by Trae
+Trae Exited at 03:48:26 PM
+Successful login at 03:48:32 PM by Trae
+Successful login at 04:01:27 PM by Trae
+Successful login at 04:03:48 PM by Trae
+Successful login at 04:10:26 PM by Trae
+Successful login at 04:13:04 PM by Trae
+Successful login at 04:13:35 PM by Trae
+Successful login at 04:25:11 PM by Trae
+Successful login at 04:26:09 PM by Trae
+Successful login at 04:28:23 PM by Trae
+Successful login at 04:33:00 PM by Trae
+Successful login at 04:35:19 PM by Trae
+Successful login at 04:38:55 PM by Trae
+Successful login at 05:34:02 PM by Trae
+Successful login at 05:44:00 PM by Trae
+Successful login at 01:55:56 PM by Trae
+Successful login at 02:10:59 PM by Trae
+Successful login at 02:12:36 PM by Trae
+Successful login at 02:13:52 PM by Trae
+Successful login at 02:15:30 PM by Trae
+Successful login at 02:18:21 PM by Trae
+Successful login at 02:20:49 PM by Trae
+Successful login at 02:24:26 PM by Trae
+Trae Exited at 02:25:06 PM
+Successful login at 02:34:17 PM by Trae
+Successful login at 02:39:17 PM by Trae
+Successful login at 02:40:12 PM by Trae
+Successful login at 02:41:04 PM by Trae
+Successful login at 02:45:16 PM by Trae
+Successful login at 02:45:51 PM by Trae
+Trae Exited at 02:46:17 PM
+Successful login at 03:10:13 PM by Trae

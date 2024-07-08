@@ -9,7 +9,7 @@ The GUI includes various options for standard users, such as the ability to chan
 
 For admin users, you have all the same abilities as standard users, but you also have the ability to create new users, update user's group, update account status, delete users, display all users, display the log, and display admin messages.
 
-For SuperAdmin users (the equivalent of Super User or sudo in Linux), you have all the same abilities as an admin account, but you also have the ability to change the password complexibility requirements (just the length for right now), change the expiration time for the passwords (the amount of days you can go before you are required to change your password), and restart the database server, though that is still in it's alpha stage, and hasn't been perfected yet.
+For SuperAdmin users (the equivalent of Super User or sudo in Linux), you have all the same abilities as an admin account, but you also have the ability to change the password complexibility requirements (just the length for right now), change the expiration time for the passwords (the amount of days you can go before you are required to change your password), and restart the database server, though that is still in it's alpha stage, and hasn't been perfected yet. You also now have the ability to interact with the database using SQL commands, as well as shut the MySQL server down.
 
 ![An example image of SuperAdmin Options](https://github.com/s412924/ReadMe/blob/1cb265f017b4121478041f89f341041a51d9ba90/SuperAdminExample.png)
 <details>

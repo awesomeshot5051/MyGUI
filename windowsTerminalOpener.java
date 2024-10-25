@@ -22,7 +22,6 @@ public class windowsTerminalOpener extends JFrame {
         status = checkStatus();
         JTextField statusField = new JTextField("Current Status: " + status);
         statusField.setEditable(false);
-        status = "running";
         if (loginGUI && !restart) {
             // If called from LoginGUI, automatically execute the initiated database button
             if (status.equalsIgnoreCase("stopped")) {

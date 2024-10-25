@@ -101,6 +101,9 @@ public class LoginGUI implements ActionListener {
     private JButton crackbutton;
     private String currentSong;
     private File videoFile;
+    private Color backgroundColor;
+    private Color buttonColor;
+    private Color textColor;
 
     public LoginGUI() throws InterruptedException {
         songQueue = new LinkedList<>();
@@ -1366,6 +1369,7 @@ public class LoginGUI implements ActionListener {
         JButton restartDatabaseButton = null;
         JButton databaseInteractionButton = null;
         JButton databaseShutdownButton = null;
+        JButton setColorSchemeButton = null;
         if (isDefaultCredentials) {
             String sql = "SELECT status FROM users WHERE name='default'";
 
@@ -1447,6 +1451,7 @@ public class LoginGUI implements ActionListener {
             welcomeFrame.pack();
             welcomeFrame.setLocationRelativeTo(null);
             welcomeFrame.setVisible(true);
+            setColorScheme(welcomeFrame);
 
 // Close the login window
             frame.dispose();
@@ -1475,11 +1480,15 @@ public class LoginGUI implements ActionListener {
 
             JPanel welcomeLabelPanel = new JPanel(new BorderLayout());
             JLabel welcomeLabel = new JLabel("Welcome, " + user + "!", SwingConstants.CENTER);
+            welcomeLabel.setBackground(textColor);
             welcomeLabelPanel.add(welcomeLabel, BorderLayout.CENTER);
 
             JPanel buttonPanel = new JPanel(new GridLayout(0, 2, 10, 10)); // GridLayout for buttons
             buttonPanel.setPreferredSize(new Dimension(440, 480));
 
+            if (backgroundColor != null) {
+                setColorScheme(buttonPanel);
+            }
             // Create a scroll pane for the content panel
             JScrollPane scrollPane = new JScrollPane(buttonPanel);
             scrollPane.setPreferredSize(new Dimension(440, 450));
@@ -1654,6 +1663,22 @@ public class LoginGUI implements ActionListener {
                 welcomeFrame.dispose();
                 InvestmentCalculator();
             });
+            setColorSchemeButton = new JButton("Set Color Scheme");
+
+            setColorSchemeButton.addActionListener(_ -> {
+                welcomeFrame.setVisible(false);
+                CustomColorChooser customColorChooser = new CustomColorChooser(welcomeFrame);
+                customColorChooser.setVisible(true);
+
+                if (customColorChooser.areColorsSelected()) {
+                    backgroundColor = customColorChooser.getBackgroundColor();
+                    buttonColor = customColorChooser.getButtonColor();
+                    textColor = customColorChooser.getTextColor();
+                    setColorScheme(welcomeFrame); // Apply the color scheme
+                }
+
+                welcomeFrame.setVisible(true);
+            });
             JButton exitButton = new JButton("Exit");
             if (isAlsoAdmin) {
                 exitButton.addActionListener(e -> {
@@ -1739,6 +1764,13 @@ public class LoginGUI implements ActionListener {
             buttonPanel.add(codeCrackerButton);
             buttonPanel.add(numberGameButton);
             buttonPanel.add(viewFilesButton);
+            buttonPanel.add(setColorSchemeButton);
+            JButton placeholder = new JButton("Placeholder");
+            buttonPanel.add(placeholder);
+            placeholder.addActionListener(_ -> {
+                JOptionPane.showMessageDialog(null, "It says placeholder for a reason!", "Nothing", JOptionPane.INFORMATION_MESSAGE);
+            });
+
             buttonPanel.add(exitButton);
             // Set up the main layout of welcomeFrame
             welcomeFrame.setLayout(new BorderLayout());
@@ -1746,6 +1778,7 @@ public class LoginGUI implements ActionListener {
             welcomeFrame.add(scrollPane, BorderLayout.CENTER); // Add buttonPanel to CENTER
             welcomeFrame.addWindowListener(myWindowAdapter);
             welcomeFrame.pack();
+            setColorScheme(welcomeFrame);
             welcomeFrame.setLocationRelativeTo(null);
             welcomeFrame.setVisible(true);
 // Close the login window
@@ -1804,6 +1837,73 @@ public class LoginGUI implements ActionListener {
             );
         }
     }
+
+    private void setColorScheme(JFrame frame) {
+        setColorScheme(frame.getContentPane());
+    }
+
+    private void setColorScheme(Container container) {
+        // Set the background color of the container
+        container.setBackground(backgroundColor);
+
+        // Iterate through all components in the container
+        for (Component component : container.getComponents()) {
+            if (component instanceof JButton) {
+                // Set button background and text color
+                component.setBackground(buttonColor);
+                component.setForeground(textColor);
+            } else if (component instanceof JPanel) {
+                // Recursively set color scheme for nested panels
+                setColorScheme((JPanel) component);
+            } else if (component instanceof JScrollPane scrollPane) {
+                setColorScheme(scrollPane.getViewport());
+                setColorScheme(scrollPane);
+            } else if (component instanceof JViewport) {
+                setColorScheme((JViewport) component);
+            }
+            // Add more conditions if you have other types of components
+        }
+    }
+
+    // Overloaded method to handle JScrollPane specifically
+    private void setColorScheme(JScrollPane scrollPane) {
+        scrollPane.setBackground(backgroundColor);
+        setColorScheme(scrollPane.getViewport());
+    }
+
+    // Overloaded method to handle JPanel specifically
+    private void setColorScheme(JPanel panel) {
+        // Set the background color of the panel
+        panel.setBackground(backgroundColor);
+
+        // Iterate through all components in the panel
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JButton) {
+                // Set button background and text color
+                component.setBackground(buttonColor);
+                component.setForeground(textColor);
+            } else if (component instanceof JPanel) {
+                // Recursively set color scheme for nested panels
+                setColorScheme((JPanel) component);
+            } else if (component instanceof JScrollPane) {
+                setColorScheme((JScrollPane) component);
+            } else if (component instanceof JViewport) {
+                setColorScheme((JViewport) component);
+            }
+            // Add more conditions if you have other types of components
+        }
+    }
+
+    // Overloaded method to handle JViewport specifically
+    private void setColorScheme(JViewport viewport) {
+        Component view = viewport.getView();
+        if (view instanceof Container) {
+            setColorScheme((Container) view);
+        } else {
+            view.setBackground(backgroundColor);
+        }
+    }
+
 
     private void changeExpirationTime() {
         // Create a input dialog to get the number of days from the user
@@ -3395,6 +3495,7 @@ public class LoginGUI implements ActionListener {
 
             budgetFrame.pack();
             budgetFrame.setLocationRelativeTo(null);
+            setColorScheme(budgetFrame);
             budgetFrame.setVisible(true);
 
             // Close the resources
@@ -6276,7 +6377,7 @@ public class LoginGUI implements ActionListener {
                                                 " has been re-enabled"
                                 );
                             }
-                            switchUser();
+//                            switchUser();
                         }
                     } else {
                         setAdmin(false);
